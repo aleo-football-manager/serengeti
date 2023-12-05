@@ -2,13 +2,23 @@ import puzzle_pieces_v015.leo;
 import multiparty_pvp_utils_v015.leo;
 
 // The 'coinflip' program.
-program wheres_alex_v017.aleo {
+program football_game_v001.aleo {
+    
+
+    transition main (a: bool) {}
+
+    struct Player {
+        player_id: u8,
+        attack: u8,
+    }
+    
+    mapping player_mapping: u8 => Player;
 
     // ix: 1
     record Game {
         owner: address,
         challenger_commit: field,
-        opponent_answer: field,
+        opponent_answer: [u8; 11],
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
@@ -126,7 +136,7 @@ program wheres_alex_v017.aleo {
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
-        opponent_answer: field,
+        opponent_answer: [u8; 11],
         ix: u32,
     }
 
@@ -141,7 +151,7 @@ program wheres_alex_v017.aleo {
         challenger_address: address,
         opponent_address: address,
         challenger_answer: field,
-        opponent_answer: field,
+        opponent_answer: [u8; 11],
         winner: address,
         loser: address,
         ix: u32,
@@ -205,6 +215,7 @@ program wheres_alex_v017.aleo {
 
         // assert that player 1s answer is either "in weeds" or "behind building"
         assert(challenger_answer == 0field || challenger_answer == 1field);
+        
         // hash the answer and nonce
         let challenger_commit: field = BHP256::commit_to_field(challenger_answer, challenger_nonce as scalar);
 
@@ -273,7 +284,7 @@ program wheres_alex_v017.aleo {
         let game_record: Game = Game {
             owner: game_multisig,
             challenger_commit: challenger_commit,
-            opponent_answer: 123field, // random field for now until opponent answer in accept_game
+            opponent_answer: [0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8], // random field for now until opponent answer in accept_game
             total_pot: challenger_wager_amount + challenger_wager_amount,
             challenger_address: challenger,
             opponent_address: opponent,
@@ -508,7 +519,7 @@ program wheres_alex_v017.aleo {
     transition accept_game
     (
         game_record: Game,
-        opponent_answer: field,
+        opponent_answer: [u8;11],
         piece_stake_challenger: puzzle_pieces_v015.leo/PieceStake.record,
         piece_claim_challenger: puzzle_pieces_v015.leo/PieceClaim.record,
         piece_stake_opponent: puzzle_pieces_v015.leo/PieceStake.record,
@@ -531,8 +542,7 @@ program wheres_alex_v017.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        // assert that player 1s answer is either "in weeds" or "behind building"
-        assert(opponent_answer == 0field || opponent_answer == 1field);
+        // TODO: assert that player 1s answer is a valid formation
 
         let (
             piece_joint_stake,
@@ -643,9 +653,10 @@ program wheres_alex_v017.aleo {
         assert_eq(self.caller, self.signer);
 
         // determine winner! If opponent correctly picked where the challenger hid alex, the opponent wins otherwise the challenger wins
-        let winner_address: address = reveal_answer_notification_record.opponent_answer == challenger_answer_record.answer ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
-        let loser_address: address = winner_address == challenger_answer_record.challenger_address ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
-        let challenger_sig: signature = challenger_claim_signature.sig;
+        // TODO - add logic to determine winner
+        let winner_address: address = challenger_answer_record.challenger_address; // todo
+        let loser_address: address = challenger_answer_record.challenger_address; // todo
+        let challenger_sig: signature = challenger_claim_signature.sig; // todo
 
         // retrieve revealedanswer record
         let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = multiparty_pvp_utils_v015.leo/reveal_answer(challenger_answer_record, challenger_sig);
@@ -769,7 +780,7 @@ program wheres_alex_v017.aleo {
         GameFinishedNotification,
         GameFinishedNotification)
     {
-        // assert that the game address/multiisg is calling this
+        // assert that the game address/multisig is calling this
         assert_eq(game_record.owner, self.signer);
 
         // assert contracts can't call this
