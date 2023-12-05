@@ -11,14 +11,20 @@ program football_game_v001.aleo {
         player_id: u8,
         attack: u8,
     }
+
+    struct Team {
+        team_id: u8,
+        players: [Player; 11],
+    }
     
     mapping player_mapping: u8 => Player;
+    mapping team_mapping: u8 => Team;
 
     // ix: 1
     record Game {
         owner: address,
         challenger_commit: field,
-        opponent_answer: [u8; 11],
+        opponent_answer: [Player; 11],
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
@@ -136,7 +142,7 @@ program football_game_v001.aleo {
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
-        opponent_answer: [u8; 11],
+        opponent_answer: [Player; 11],
         ix: u32,
     }
 
@@ -150,8 +156,8 @@ program football_game_v001.aleo {
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
-        challenger_answer: field,
-        opponent_answer: [u8; 11],
+        challenger_answer: [Player; 11],
+        opponent_answer: [Player; 11],
         winner: address,
         loser: address,
         ix: u32,
@@ -189,7 +195,7 @@ program football_game_v001.aleo {
         challenger_sig: signature, //from output of useSignature
         //multiparty_pvp_utils data
         challenger_nonce: field,
-        challenger_answer: field,
+        challenger_answer: [Player; 11],
         game_multisig_seed: field, //game_multisig seed to send to user
         //wheres_alex data
     ) -> (
@@ -214,7 +220,6 @@ program football_game_v001.aleo {
         assert_neq(game_multisig, opponent);
 
         // assert that player 1s answer is either "in weeds" or "behind building"
-        assert(challenger_answer == 0field || challenger_answer == 1field);
         
         // hash the answer and nonce
         let challenger_commit: field = BHP256::commit_to_field(challenger_answer, challenger_nonce as scalar);
@@ -281,10 +286,15 @@ program football_game_v001.aleo {
             ix: 3u32,
         };
 
+        let empty_player: Player = Player {
+            player_id: 0u8,
+            attack: 0u8,
+        };
+        
         let game_record: Game = Game {
             owner: game_multisig,
             challenger_commit: challenger_commit,
-            opponent_answer: [0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8], // random field for now until opponent answer in accept_game
+            opponent_answer: [empty_player,empty_player,empty_player,empty_player,empty_player,empty_player,empty_player,empty_player,empty_player,empty_player,empty_player], // random field for now until opponent answer in accept_game
             total_pot: challenger_wager_amount + challenger_wager_amount,
             challenger_address: challenger,
             opponent_address: opponent,
@@ -519,7 +529,7 @@ program football_game_v001.aleo {
     transition accept_game
     (
         game_record: Game,
-        opponent_answer: [u8;11],
+        opponent_answer: [Player;11],
         piece_stake_challenger: puzzle_pieces_v015.leo/PieceStake.record,
         piece_claim_challenger: puzzle_pieces_v015.leo/PieceClaim.record,
         piece_stake_opponent: puzzle_pieces_v015.leo/PieceStake.record,
