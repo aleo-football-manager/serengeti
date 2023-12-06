@@ -9,7 +9,15 @@ program football_game_v001.aleo {
 
     struct Player {
         player_id: u8,
+        team_id: u8,
+        goalkeeper: bool
         attack: u8,
+        defense: u8,
+        speed: u8,
+        power: u8,
+        stamina: u8,
+        technique: u8,
+        goalkeeping: u8,
     }
 
     struct Team {
@@ -633,6 +641,70 @@ program football_game_v001.aleo {
         assert(block_ht >= current_block_ht - 1000u32);
         assert(block_ht <= current_block_ht + 1000u32);
     }
+
+    transition reveal_answer_new 
+    (
+        reveal_answer_notification_record: RevealAnswerNotification,
+        challenger_answer_record: multiparty_pvp_utils_v015.leo/Answer.record,
+        joint_piece_state: puzzle_pieces_v015.leo/JointPieceState.record,
+        challenger_claim_signature: puzzle_pieces_v015.leo/ClaimSignature.record,
+    ) -> (
+        multiparty_pvp_utils_v015.leo/RevealAnswer.record,
+        multiparty_pvp_utils_v015.leo/AuditRevealAnswer.record,
+        puzzle_pieces_v015.leo/JointPieceWinner.record,
+        puzzle_pieces_v015.leo/AuditJointPieceWinner.record,
+        GameFinishReqNotification,
+        GameFinishReqNotification,
+    ) {
+        // assert that the correct state updater address is the challenger and the challenger
+        // is invoking this
+        assert_eq(joint_piece_state.state_updater_address, self.signer);
+
+        // assert contracts can't call this
+        assert_eq(self.caller, self.signer);
+        
+        return then finalize (
+            reveal_answer_notification_record.opponent_answer,
+            challenger_answer_record.answer
+            );
+    }
+
+    finalize reveal_answer_new (
+        opponent_answer: [u8;11],
+        answer: [u8;11]
+    ) {
+        let goals_home: u64 = 0u64;
+        let goals_opponent: u64 = 0u64;
+        for i: u8 in 1u8..11u8 {
+            let attacker: Player = Mapping::get(player_mapping, answer[i]);
+            let defender: Player = Mapping::get(player_mapping, opponent_answer[i]);
+            let goalkeeper: Player = Mapping::get(player_mapping, opponent_answer[0u8]);
+            let switch_sides: bool = attacker.speed < defender.speed;
+            if switch_sides {
+                attacker = Mapping::get(player_mapping, opponent_answer[i]);
+                defender = Mapping::get(player_mapping, answer[i]);
+                goalkeeper = Mapping::get(player_mapping, answer[0u8]);
+            }
+
+
+            // Attacker shoots, attack stat determines if it's on target.
+            if  attacker.attack > ChaCha::rand_u8() {
+                // Defender blocks, defense stat determines if it's blocked.
+                if defender.defense < ChaCha::rand_u8() {
+                    // Goalkeeper saves, goalkeeping stat determines if it's saved.
+                    if goalkeeper.goalkeeping < ChaCha::rand_u8() {
+                        // If not saved, record the goal for attacking team.
+                        if (switch_sides) {
+                            goals_home += 1u64;
+                        } else {
+                            goals_opponent += 1u64;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     // called by challenger to reveal answer record
     transition reveal_answer_game
