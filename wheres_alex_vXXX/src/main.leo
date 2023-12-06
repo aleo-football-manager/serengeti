@@ -4,8 +4,11 @@ import multiparty_pvp_utils_v015.leo;
 // The 'coinflip' program.
 program football_game_v001.aleo {
     
-
     transition main (a: bool) {}
+
+    /////////////////////////////
+    // MAPPING                 //
+    /////////////////////////////
 
     struct Player {
         player_id: u8,
@@ -20,13 +23,21 @@ program football_game_v001.aleo {
         goalkeeping: u8,
     }
 
-    struct Team {
-        team_id: u8,
-        players: [Player; 11],
-    }
-    
+    // TODO: replace by nfts in V2.
     mapping player_mapping: u8 => Player;
-    mapping team_mapping: u8 => Team;
+
+    transition add_player (player: Player) {
+        // only owner can add players
+        // assert_eq(self.signer, self.signer);
+        // player_mapping[player.player_id] = player;
+        
+        return then finalize(player);
+    }
+
+    finalize add_player (player: Player) {
+        assert(!Mapping::contains(player_mapping, player.player_id));
+        Mapping::set(player_mapping, player.player_id, player);
+    }
 
     // ix: 1
     record Game {

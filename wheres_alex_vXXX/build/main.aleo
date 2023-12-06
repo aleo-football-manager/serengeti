@@ -38,10 +38,6 @@ struct Player:
     technique as u8;
     goalkeeping as u8;
 
-struct Team:
-    team_id as u8;
-    players as [Player; 11u32];
-
 record Game:
     owner as address.private;
     challenger_commit as field.private;
@@ -156,13 +152,21 @@ mapping player_mapping:
 	key as u8.public;
 	value as Player.public;
 
-
-mapping team_mapping:
-	key as u8.public;
-	value as Team.public;
-
 function main:
     input r0 as boolean.private;
+
+
+function add_player:
+    input r0 as Player.private;
+    async add_player r0 into r1;
+    output r1 as football_game_v001.aleo/add_player.future;
+
+finalize add_player:
+    input r0 as Player.public;
+    contains player_mapping[r0.player_id] into r1;
+    not r1 into r2;
+    assert.eq r2 true;
+    set r0 into player_mapping[r0.player_id];
 
 
 function propose_game:
