@@ -14,7 +14,7 @@ record Answer:
     game_multisig as address.private;
     amount as u64.private;
     nonce as field.private;
-    answer as field.private;
+    answer as [u8; 11u32].private;
     message_1 as field.private;
     message_2 as field.private;
     message_3 as field.private;
@@ -30,7 +30,7 @@ record AuditMintAnswer:
     game_multisig as address.private;
     amount as u64.private;
     nonce as field.private;
-    answer as field.private;
+    answer as [u8; 11u32].private;
     message_1 as field.private;
     message_2 as field.private;
     message_3 as field.private;
@@ -45,7 +45,7 @@ record RevealAnswer:
     game_multisig as address.private;
     amount as u64.private;
     nonce as field.private;
-    answer as field.private;
+    answer as [u8; 11u32].private;
     sig as signature.private;
     ix as u32.private;
 
@@ -56,7 +56,7 @@ record AuditRevealAnswer:
     game_multisig as address.private;
     amount as u64.private;
     nonce as field.private;
-    answer as field.private;
+    answer as [u8; 11u32].private;
     sig as signature.private;
     ix as u32.private;
 
@@ -85,7 +85,7 @@ function mint_answer:
     input r2 as address.private;
     input r3 as u64.private;
     input r4 as field.private;
-    input r5 as field.private;
+    input r5 as [u8; 11u32].private;
     input r6 as field.private;
     input r7 as field.private;
     input r8 as field.private;

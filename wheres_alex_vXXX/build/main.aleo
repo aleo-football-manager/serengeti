@@ -20,15 +20,15 @@ program football_game_v001.aleo;
 
 
 
+
+
+
+
+
+
 struct Player:
     player_id as u8;
     attack as u8;
-
-
-
-
-
-
 
 struct Team:
     team_id as u8;
@@ -37,7 +37,7 @@ struct Team:
 record Game:
     owner as address.private;
     challenger_commit as field.private;
-    opponent_answer as [Player; 11u32].private;
+    opponent_answer as [u8; 11u32].private;
     total_pot as u64.private;
     challenger_address as address.private;
     opponent_address as address.private;
@@ -114,7 +114,7 @@ record RevealAnswerNotification:
     total_pot as u64.private;
     challenger_address as address.private;
     opponent_address as address.private;
-    opponent_answer as [Player; 11u32].private;
+    opponent_answer as [u8; 11u32].private;
     ix as u32.private;
 
 record GameFinishReqNotification:
@@ -125,8 +125,8 @@ record GameFinishReqNotification:
     total_pot as u64.private;
     challenger_address as address.private;
     opponent_address as address.private;
-    challenger_answer as [Player; 11u32].private;
-    opponent_answer as [Player; 11u32].private;
+    challenger_answer as [u8; 11u32].private;
+    opponent_answer as [u8; 11u32].private;
     winner as address.private;
     loser as address.private;
     ix as u32.private;
@@ -171,7 +171,7 @@ function propose_game:
     input r10 as field.private;
     input r11 as signature.private;
     input r12 as field.private;
-    input r13 as [Player; 11u32].private;
+    input r13 as [u8; 11u32].private;
     input r14 as field.private;
     assert.eq self.caller self.signer;
     assert.neq r5 r4;
@@ -187,21 +187,20 @@ function propose_game:
     cast r4 r5 1field true r26 r3 r4 2u32 into r27 as GameReqNotification.record;
     add r1 r1 into r28;
     cast r3 r5 1field false r28 r3 r4 3u32 into r29 as WaitingAcceptanceNotification.record;
-    cast 0u8 0u8 into r30 as Player;
-    cast r30r30r30r30r30r30r30r30r30r30r30 into r31 as [Player; 11u32];
-    add r1 r1 into r32;
-    cast r5 r16 r31 r32 r3 r4 r5 1field 1u32 into r33 as Game.record;
-    call multiparty_pvp_utils_v015.aleo/mint_answer r3 r4 r5 r1 r12 r13 r6 r7 r8 r9 r10 r11 into r34 r35;
+    cast 0u80u80u80u80u80u80u80u80u80u80u8 into r30 as [u8; 11u32];
+    add r1 r1 into r31;
+    cast r5 r16 r30 r31 r3 r4 r5 1field 1u32 into r32 as Game.record;
+    call multiparty_pvp_utils_v015.aleo/mint_answer r3 r4 r5 r1 r12 r13 r6 r7 r8 r9 r10 r11 into r33 r34;
     output r19 as puzzle_pieces_v015.aleo/PieceClaim.record;
     output r20 as puzzle_pieces_v015.aleo/PieceStake.record;
     output r21 as puzzle_pieces_v015.aleo/ClaimSignature.record;
     output r22 as puzzle_pieces_v015.aleo/Piece.record;
     output r23 as puzzle_pieces_v015.aleo/AuditStakeIn.record;
-    output r34 as multiparty_pvp_utils_v015.aleo/Answer.record;
-    output r35 as multiparty_pvp_utils_v015.aleo/AuditMintAnswer.record;
+    output r33 as multiparty_pvp_utils_v015.aleo/Answer.record;
+    output r34 as multiparty_pvp_utils_v015.aleo/AuditMintAnswer.record;
     output r24 as multiparty_pvp_utils_v015.aleo/Key.record;
     output r25 as multiparty_pvp_utils_v015.aleo/AuditKey.record;
-    output r33 as Game.record;
+    output r32 as Game.record;
     output r27 as GameReqNotification.record;
     output r29 as WaitingAcceptanceNotification.record;
 
@@ -267,7 +266,7 @@ function opponent_renege_stake:
 
 function accept_game:
     input r0 as Game.record;
-    input r1 as [Player; 11u32].private;
+    input r1 as [u8; 11u32].private;
     input r2 as puzzle_pieces_v015.aleo/PieceStake.record;
     input r3 as puzzle_pieces_v015.aleo/PieceClaim.record;
     input r4 as puzzle_pieces_v015.aleo/PieceStake.record;
