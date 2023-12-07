@@ -1,5 +1,5 @@
 import puzzle_pieces_v015.leo;
-import multiparty_pvp_utils_v015.leo;
+// import multiparty_pvp_utils_v015.leo;
 
 // The 'coinflip' program.
 program football_game_v001.aleo {
@@ -10,7 +10,7 @@ program football_game_v001.aleo {
     // MAPPING                 //
     /////////////////////////////
 
-    struct Player {
+  struct Player {
         player_id: u8,
         team_id: u8,
         goalkeeper: bool
@@ -30,7 +30,6 @@ program football_game_v001.aleo {
         // only owner can add players
         // assert_eq(self.signer, self.signer);
         // player_mapping[player.player_id] = player;
-        
         return then finalize(player);
     }
 
@@ -50,6 +49,8 @@ program football_game_v001.aleo {
         game_multisig: address,
         game_state: field,
         ix: u32,
+        goals_home: u64,
+        goals_away: u64,
     }
 
     // GAME STATE RECORDED ON NOTIFICATIONS
@@ -223,10 +224,10 @@ program football_game_v001.aleo {
         puzzle_pieces_v015.leo/ClaimSignature.record,
         puzzle_pieces_v015.leo/Piece.record,
         puzzle_pieces_v015.leo/AuditStakeIn.record,
-        multiparty_pvp_utils_v015.leo/Answer.record,
-        multiparty_pvp_utils_v015.leo/AuditMintAnswer.record,
-        multiparty_pvp_utils_v015.leo/Key.record,
-        multiparty_pvp_utils_v015.leo/AuditKey.record,
+        Answer,
+        AuditMintAnswer,
+        Key,
+        AuditKey,
         Game,
         GameReqNotification,
         WaitingAcceptanceNotification,
@@ -275,13 +276,28 @@ program football_game_v001.aleo {
             challenger_sig
         );
 
-        let (
-            key_record,
-            audit_key_record
-        ) : (
-            Key,
-            AuditKey
-        ) = multiparty_pvp_utils_v015.leo/mint_multisig_key(game_multisig_seed,challenger_wager_amount,challenger,opponent,game_multisig);
+
+        let puzzle_issuer: address = aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls;
+
+        let key_record: Key = Key {
+            owner: opponent,
+            seed: game_multisig_seed,
+            amount: challenger_wager_amount,
+            challenger: challenger,
+            opponent: opponent,
+            game_multisig: game_multisig,
+            ix: 5u32,
+        };
+
+        let audit_key_record: AuditKey = AuditKey {
+            owner: puzzle_issuer,
+            seed: game_multisig_seed,
+            amount: challenger_wager_amount,
+            challenger: challenger,
+            opponent: opponent,
+            game_multisig: game_multisig,
+            ix: 6u32,
+        };
 
         let game_request_notification_record: GameReqNotification = GameReqNotification {
             owner: opponent, //opponent
@@ -316,22 +332,57 @@ program football_game_v001.aleo {
             game_multisig: game_multisig,
             game_state: 1field,
             ix: 1u32,
+            goals_home: 0u64,
+            goals_away: 0u64,
         };
 
-        let (challenger_answer_record, audit_mint_answer_record):  (Answer, AuditMintAnswer) = multiparty_pvp_utils_v015.leo/mint_answer(
-                challenger,
-                opponent,
-                game_multisig,
-                challenger_wager_amount,
-                challenger_nonce,
-                challenger_answer,
-                challenger_message_1,
-                challenger_message_2,
-                challenger_message_3,
-                challenger_message_4,
-                challenger_message_5,
-                challenger_sig
-        );
+        // let puzzle_issuer: address = aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls;
+
+        let msg: Mssage = Mssage {
+            field_1: challenger_message_1,
+            field_2: challenger_message_2,
+            field_3: challenger_message_3,
+            field_4: challenger_message_4,
+            field_5: challenger_message_5
+        };
+
+        // Verify signature against message to guarantee challenger is caller
+        let signature_check: bool = true;
+        let is_valid_sig: bool = challenger_sig.verify(challenger, msg);
+        assert_eq(signature_check,is_valid_sig);
+
+        let challenger_answer_record: Answer = Answer {
+            owner: challenger,
+            challenger_address: challenger,
+            opponent_address: opponent,
+            game_multisig: game_multisig,
+            amount: challenger_wager_amount,
+            nonce: challenger_nonce,
+            answer: challenger_answer,
+            message_1: challenger_message_1,
+            message_2: challenger_message_2,
+            message_3: challenger_message_3,
+            message_4: challenger_message_4,
+            message_5: challenger_message_5,
+            ix: 1u32,
+        };
+
+        let audit_mint_answer_record: AuditMintAnswer = AuditMintAnswer {
+            owner: puzzle_issuer,
+            answer_owner: challenger,
+            challenger_address: challenger,
+            opponent_address: opponent,
+            game_multisig: game_multisig,
+            amount: challenger_wager_amount,
+            nonce: challenger_nonce,
+            answer: challenger_answer,
+            message_1: challenger_message_1,
+            message_2: challenger_message_2,
+            message_3: challenger_message_3,
+            message_4: challenger_message_4,
+            message_5: challenger_message_5,
+            ix: 2u32,
+        };
 
 
         return (
@@ -401,7 +452,7 @@ program football_game_v001.aleo {
 
     transition submit_wager (
         opponent_wager_record: puzzle_pieces_v015.leo/Piece.record,
-        key_record: multiparty_pvp_utils_v015.leo/Key.record,
+        key_record: Key,
         game_req_notification: GameReqNotification,
         opponent_message_1: field, //from output of useSignature
         opponent_message_2: field,
@@ -489,7 +540,6 @@ program football_game_v001.aleo {
             opponent_submitted_wager_notification_record,
         );
     }
-
 
     // opponent calls this function with Multisig key and signature as input
     // that was submitted when submitting wager that exists on claim record
@@ -622,6 +672,8 @@ program football_game_v001.aleo {
             game_multisig: game_record.game_multisig,
             game_state: 3field,
             ix: 1u32,
+            goals_home: game_record.goals_home,
+            goals_away: game_record.goals_away,
         };
 
         return (
@@ -656,12 +708,12 @@ program football_game_v001.aleo {
     transition reveal_answer_new 
     (
         reveal_answer_notification_record: RevealAnswerNotification,
-        challenger_answer_record: multiparty_pvp_utils_v015.leo/Answer.record,
+        challenger_answer_record: Answer,
         joint_piece_state: puzzle_pieces_v015.leo/JointPieceState.record,
         challenger_claim_signature: puzzle_pieces_v015.leo/ClaimSignature.record,
     ) -> (
-        multiparty_pvp_utils_v015.leo/RevealAnswer.record,
-        multiparty_pvp_utils_v015.leo/AuditRevealAnswer.record,
+        RevealAnswer,
+        AuditRevealAnswer,
         puzzle_pieces_v015.leo/JointPieceWinner.record,
         puzzle_pieces_v015.leo/AuditJointPieceWinner.record,
         GameFinishReqNotification,
@@ -685,7 +737,7 @@ program football_game_v001.aleo {
         answer: [u8;11]
     ) {
         let goals_home: u64 = 0u64;
-        let goals_opponent: u64 = 0u64;
+        let goals_away: u64 = 0u64;
         for i: u8 in 1u8..11u8 {
             let attacker: Player = Mapping::get(player_mapping, answer[i]);
             let defender: Player = Mapping::get(player_mapping, opponent_answer[i]);
@@ -708,12 +760,26 @@ program football_game_v001.aleo {
                         if (switch_sides) {
                             goals_home += 1u64;
                         } else {
-                            goals_opponent += 1u64;
+                            goals_away += 1u64;
                         }
                     }
                 }
             }
         }
+        // // Update the game state
+        // let updated_game_record: Game = Game {
+        //     owner: game_record.owner,
+        //     challenger_commit: game_record.challenger_commit,
+        //     opponent_answer: opponent_answer,
+        //     total_pot: game_record.total_pot,
+        //     challenger_address: game_record.challenger_address,
+        //     opponent_address: game_record.opponent_address,
+        //     game_multisig: game_record.game_multisig,
+        //     game_state: 3field, //todo
+        //     ix: 0u32, // todo
+        //     goals_home: goals_home,
+        //     goals_away: goals_away,
+        // };
     }
 
 
@@ -721,12 +787,12 @@ program football_game_v001.aleo {
     transition reveal_answer_game
     (
         reveal_answer_notification_record: RevealAnswerNotification,
-        challenger_answer_record: multiparty_pvp_utils_v015.leo/Answer.record,
+        challenger_answer_record: Answer,
         joint_piece_state: puzzle_pieces_v015.leo/JointPieceState.record,
         challenger_claim_signature: puzzle_pieces_v015.leo/ClaimSignature.record,
     ) -> (
-        multiparty_pvp_utils_v015.leo/RevealAnswer.record,
-        multiparty_pvp_utils_v015.leo/AuditRevealAnswer.record,
+        RevealAnswer,
+        AuditRevealAnswer,
         puzzle_pieces_v015.leo/JointPieceWinner.record,
         puzzle_pieces_v015.leo/AuditJointPieceWinner.record,
         GameFinishReqNotification,
@@ -748,7 +814,58 @@ program football_game_v001.aleo {
         let challenger_sig: signature = challenger_claim_signature.sig; // todo
 
         // retrieve revealedanswer record
-        let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = multiparty_pvp_utils_v015.leo/reveal_answer(challenger_answer_record, challenger_sig);
+        // set puzzle issuing address as issuer:
+        let puzzle_issuer: address = aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls;
+
+        // Verify that owner is challenger
+        assert_eq(challenger_answer_record.owner, challenger_answer_record.challenger_address);
+
+        // Verify signature from Cagainst message to guarantee challenger is caller
+        let msg: Mssage = Mssage {
+            field_1: challenger_answer_record.message_1,
+            field_2: challenger_answer_record.message_2,
+            field_3: challenger_answer_record.message_3,
+            field_4: challenger_answer_record.message_4,
+            field_5: challenger_answer_record.message_5
+        };
+
+        let signature_check: bool = true;
+        let is_valid_sig: bool = challenger_sig.verify(challenger_answer_record.challenger_address, msg);
+        assert_eq(signature_check,is_valid_sig);
+
+
+        let answer_owner: address = challenger_answer_record.owner;
+        let answer_challenger_address: address = challenger_answer_record.challenger_address;
+        let answer_opponent_address: address = challenger_answer_record.opponent_address;
+        let game_multisig: address = challenger_answer_record.game_multisig;
+        let answer_amount: u64 = challenger_answer_record.amount;
+        let answer_nonce: field = challenger_answer_record.nonce;
+        let answer_answer: [u8; 11] = challenger_answer_record.answer;
+
+        let revealed_answer_record: RevealAnswer = RevealAnswer {
+            owner: game_multisig,
+            challenger_address: answer_challenger_address,
+            opponent_address: answer_opponent_address,
+            game_multisig: game_multisig,
+            amount: answer_amount,
+            nonce: answer_nonce,
+            answer: answer_answer,
+            sig: challenger_sig,
+            ix: 3u32,
+        };
+
+        let audit_revealed_answer_record: AuditRevealAnswer = AuditRevealAnswer {
+            owner: puzzle_issuer,
+            challenger_address: answer_challenger_address,
+            opponent_address: answer_opponent_address,
+            game_multisig: game_multisig,
+            amount: answer_amount,
+            nonce: answer_nonce,
+            answer: answer_answer,
+            sig: challenger_sig,
+            ix: 4u32,
+        };
+        
 
         let (joint_piece_winner, audit_joint_piece_winner): (JointPieceWinner, AuditJointPieceWinner) = puzzle_pieces_v015.leo/joint_stake_state_update(joint_piece_state, challenger_claim_signature, winner_address);
 
@@ -825,6 +942,8 @@ program football_game_v001.aleo {
             game_multisig: game_record.game_multisig,
             game_state: 3field,
             ix: 0u32,
+            goals_home: game_record.goals_home,
+            goals_away: game_record.goals_away,
         };
 
         let game_finished_notification_challenger_record: GameFinishedNotification = GameFinishedNotification {
@@ -886,6 +1005,8 @@ program football_game_v001.aleo {
             game_multisig: game_record.game_multisig,
             game_state: 3field,
             ix: 0u32,
+            goals_home: game_record.goals_home,
+            goals_away: game_record.goals_away,
         };
 
         // Notification to challenger of game finished
@@ -934,4 +1055,96 @@ program football_game_v001.aleo {
         let threshold_block_ht: u32 = joint_time_claim_block_ht + 10000u32;
         assert(current_block_ht > threshold_block_ht);
     }
+
+    struct Mssage {
+        field_1: field,
+        field_2: field,
+        field_3: field,
+        field_4: field,
+        field_5: field,
+    }
+
+    // ix: 1u32
+    record Answer {
+        owner: address, //challenger
+        challenger_address: address,
+        opponent_address: address,
+        game_multisig: address,
+        amount: u64,
+        nonce: field,
+        answer: [u8; 11],
+        message_1: field,
+        message_2: field,
+        message_3: field,
+        message_4: field,
+        message_5: field,
+        ix: u32,
+    }
+
+    // ix: 2u32,
+    record AuditMintAnswer {
+        owner: address,
+        answer_owner: address,
+        challenger_address: address,
+        opponent_address: address,
+        game_multisig: address,
+        amount: u64,
+        nonce: field,
+        answer: [u8; 11],
+        message_1: field,
+        message_2: field,
+        message_3: field,
+        message_4: field,
+        message_5: field,
+        ix: u32,
+    }
+
+    // ix: 3u32
+    record RevealAnswer {
+        owner: address, //challenger
+        challenger_address: address,
+        opponent_address: address,
+        game_multisig: address,
+        amount: u64,
+        nonce: field,
+        answer: [u8; 11],
+        sig: signature,
+        ix: u32,
+    }
+
+    // ix: 4u32
+    record AuditRevealAnswer {
+        owner: address, //challenger
+        challenger_address: address,
+        opponent_address: address,
+        game_multisig: address,
+        amount: u64,
+        nonce: field,
+        answer: [u8; 11],
+        sig: signature
+        ix: u32,
+    }
+
+    // ix: 5u32
+    record Key {
+        owner: address, //opponent
+        seed: field,
+        amount: u64,
+        challenger: address,
+        opponent: address,
+        game_multisig: address,
+        ix: u32,
+    }
+
+    // ix: 6u32
+    record AuditKey {
+        owner: address, //puzzle issuer
+        seed: field,
+        amount: u64,
+        challenger: address,
+        opponent: address,
+        game_multisig: address,
+        ix: u32,
+    }
+
 }
