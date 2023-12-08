@@ -42,7 +42,7 @@ program football_game_v001.aleo {
     record Game {
         owner: address,
         challenger_commit: field,
-        opponent_answer: [Player; 11],
+        opponent_answer: [Player; 11], // TODO how can we pass this val in accept game
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
