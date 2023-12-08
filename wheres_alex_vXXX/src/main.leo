@@ -13,7 +13,7 @@ program football_game_v001.aleo {
   struct Player {
         player_id: u8,
         team_id: u8,
-        goalkeeper: bool
+        goalkeeper: bool,
         attack: u8,
         defense: u8,
         speed: u8,
@@ -22,7 +22,7 @@ program football_game_v001.aleo {
         technique: u8,
         goalkeeping: u8,
     }
-
+    
     // TODO: replace by nfts in V2.
     mapping player_mapping: u8 => Player;
 
@@ -42,7 +42,7 @@ program football_game_v001.aleo {
     record Game {
         owner: address,
         challenger_commit: field,
-        opponent_answer: [u8; 11],
+        opponent_answer: [Player; 11],
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
@@ -162,7 +162,7 @@ program football_game_v001.aleo {
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
-        opponent_answer: [u8; 11],
+        opponent_answer: [Player; 11],
         ix: u32,
     }
 
@@ -176,8 +176,8 @@ program football_game_v001.aleo {
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
-        challenger_answer: [u8; 11],
-        opponent_answer: [u8; 11],
+        challenger_answer: [Player; 11],
+        opponent_answer: [Player; 11],
         winner: address,
         loser: address,
         ix: u32,
@@ -215,7 +215,7 @@ program football_game_v001.aleo {
         challenger_sig: signature, //from output of useSignature
         //multiparty_pvp_utils data
         challenger_nonce: field,
-        challenger_answer: [u8; 11],
+        challenger_answer: [Player; 11],
         game_multisig_seed: field, //game_multisig seed to send to user
         //wheres_alex data
     ) -> (
@@ -321,11 +321,24 @@ program football_game_v001.aleo {
             ix: 3u32,
         };
 
+        let empty_player: Player = Player {
+            player_id: 0u8,
+            team_id: 0u8,
+            goalkeeper: false,
+            attack: 0u8,
+            defense: 0u8,
+            speed: 0u8,
+            power: 0u8,
+            stamina: 0u8,
+            technique: 0u8,
+            goalkeeping: 0u8,
+        };
+        
 
         let game_record: Game = Game {
             owner: game_multisig,
             challenger_commit: challenger_commit,
-            opponent_answer: [0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8], // random field for now until opponent answer in accept_game
+            opponent_answer: [empty_player,empty_player,empty_player,empty_player,empty_player,empty_player,empty_player,empty_player,empty_player,empty_player,empty_player], // random field for now until opponent answer in accept_game
             total_pot: challenger_wager_amount + challenger_wager_amount,
             challenger_address: challenger,
             opponent_address: opponent,
@@ -594,7 +607,7 @@ program football_game_v001.aleo {
     transition accept_game
     (
         game_record: Game,
-        opponent_answer: [u8;11],
+        opponent_answer: [Player;11],
         piece_stake_challenger: puzzle_pieces_v015.leo/PieceStake.record,
         piece_claim_challenger: puzzle_pieces_v015.leo/PieceClaim.record,
         piece_stake_opponent: puzzle_pieces_v015.leo/PieceStake.record,
@@ -705,82 +718,41 @@ program football_game_v001.aleo {
         assert(block_ht <= current_block_ht + 1000u32);
     }
 
-    transition reveal_answer_new 
-    (
-        reveal_answer_notification_record: RevealAnswerNotification,
-        challenger_answer_record: Answer,
-        joint_piece_state: puzzle_pieces_v015.leo/JointPieceState.record,
-        challenger_claim_signature: puzzle_pieces_v015.leo/ClaimSignature.record,
-    ) -> (
-        RevealAnswer,
-        AuditRevealAnswer,
-        puzzle_pieces_v015.leo/JointPieceWinner.record,
-        puzzle_pieces_v015.leo/AuditJointPieceWinner.record,
-        GameFinishReqNotification,
-        GameFinishReqNotification,
-    ) {
-        // assert that the correct state updater address is the challenger and the challenger
-        // is invoking this
-        assert_eq(joint_piece_state.state_updater_address, self.signer);
-
-        // assert contracts can't call this
-        assert_eq(self.caller, self.signer);
-        
-        return then finalize (
-            reveal_answer_notification_record.opponent_answer,
-            challenger_answer_record.answer
-            );
-    }
-
-    finalize reveal_answer_new (
-        opponent_answer: [u8;11],
-        answer: [u8;11]
-    ) {
-        let goals_home: u64 = 0u64;
-        let goals_away: u64 = 0u64;
-        for i: u8 in 1u8..11u8 {
-            let attacker: Player = Mapping::get(player_mapping, answer[i]);
-            let defender: Player = Mapping::get(player_mapping, opponent_answer[i]);
-            let goalkeeper: Player = Mapping::get(player_mapping, opponent_answer[0u8]);
-            let switch_sides: bool = attacker.speed < defender.speed;
-            if switch_sides {
-                attacker = Mapping::get(player_mapping, opponent_answer[i]);
-                defender = Mapping::get(player_mapping, answer[i]);
-                goalkeeper = Mapping::get(player_mapping, answer[0u8]);
-            }
+    // finalize reveal_answer_new (
+    //     opponent_answer: [u8;11],
+    //     answer: [u8;11]
+    // ) {
+    //     let goals_home: u64 = 0u64;
+    //     let goals_away: u64 = 0u64;
+    //     for i: u8 in 1u8..11u8 {
+    //         let attacker: Player = Mapping::get(player_mapping, answer[i]);
+    //         let defender: Player = Mapping::get(player_mapping, opponent_answer[i]);
+    //         let goalkeeper: Player = Mapping::get(player_mapping, opponent_answer[0u8]);
+    //         let switch_sides: bool = attacker.speed < defender.speed;
+    //         if switch_sides {
+    //             attacker = Mapping::get(player_mapping, opponent_answer[i]);
+    //             defender = Mapping::get(player_mapping, answer[i]);
+    //             goalkeeper = Mapping::get(player_mapping, answer[0u8]);
+    //         }
 
 
-            // Attacker shoots, attack stat determines if it's on target.
-            if  attacker.attack > ChaCha::rand_u8() {
-                // Defender blocks, defense stat determines if it's blocked.
-                if defender.defense < ChaCha::rand_u8() {
-                    // Goalkeeper saves, goalkeeping stat determines if it's saved.
-                    if goalkeeper.goalkeeping < ChaCha::rand_u8() {
-                        // If not saved, record the goal for attacking team.
-                        if (switch_sides) {
-                            goals_home += 1u64;
-                        } else {
-                            goals_away += 1u64;
-                        }
-                    }
-                }
-            }
-        }
-        // // Update the game state
-        // let updated_game_record: Game = Game {
-        //     owner: game_record.owner,
-        //     challenger_commit: game_record.challenger_commit,
-        //     opponent_answer: opponent_answer,
-        //     total_pot: game_record.total_pot,
-        //     challenger_address: game_record.challenger_address,
-        //     opponent_address: game_record.opponent_address,
-        //     game_multisig: game_record.game_multisig,
-        //     game_state: 3field, //todo
-        //     ix: 0u32, // todo
-        //     goals_home: goals_home,
-        //     goals_away: goals_away,
-        // };
-    }
+    //         // Attacker shoots, attack stat determines if it's on target.
+    //         if  attacker.attack > ChaCha::rand_u8() {
+    //             // Defender blocks, defense stat determines if it's blocked.
+    //             if defender.defense < ChaCha::rand_u8() {
+    //                 // Goalkeeper saves, goalkeeping stat determines if it's saved.
+    //                 if goalkeeper.goalkeeping < ChaCha::rand_u8() {
+    //                     // If not saved, record the goal for attacking team.
+    //                     if (switch_sides) {
+    //                         goals_home += 1u64;
+    //                     } else {
+    //                         goals_away += 1u64;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
 
     // called by challenger to reveal answer record
@@ -840,7 +812,7 @@ program football_game_v001.aleo {
         let game_multisig: address = challenger_answer_record.game_multisig;
         let answer_amount: u64 = challenger_answer_record.amount;
         let answer_nonce: field = challenger_answer_record.nonce;
-        let answer_answer: [u8; 11] = challenger_answer_record.answer;
+        let answer_answer: [Player; 11] = challenger_answer_record.answer;
 
         let revealed_answer_record: RevealAnswer = RevealAnswer {
             owner: game_multisig,
@@ -1072,7 +1044,7 @@ program football_game_v001.aleo {
         game_multisig: address,
         amount: u64,
         nonce: field,
-        answer: [u8; 11],
+        answer: [Player; 11],
         message_1: field,
         message_2: field,
         message_3: field,
@@ -1090,7 +1062,7 @@ program football_game_v001.aleo {
         game_multisig: address,
         amount: u64,
         nonce: field,
-        answer: [u8; 11],
+        answer: [Player; 11],
         message_1: field,
         message_2: field,
         message_3: field,
@@ -1107,7 +1079,7 @@ program football_game_v001.aleo {
         game_multisig: address,
         amount: u64,
         nonce: field,
-        answer: [u8; 11],
+        answer: [Player; 11],
         sig: signature,
         ix: u32,
     }
@@ -1120,7 +1092,7 @@ program football_game_v001.aleo {
         game_multisig: address,
         amount: u64,
         nonce: field,
-        answer: [u8; 11],
+        answer: [Player; 11],
         sig: signature
         ix: u32,
     }
