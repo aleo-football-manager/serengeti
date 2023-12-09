@@ -1,4 +1,4 @@
-program player_mapping_v001.aleo;
+program player_mapping_v002.aleo;
 
 struct Player:
     player_id as u8;

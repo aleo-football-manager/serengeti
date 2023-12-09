@@ -167,6 +167,8 @@ program football_game_v001.aleo {
         opponent_answer: [Player; 11],
         winner: address,
         loser: address,
+        goals_home: u64,
+        goals_away: u64,
         ix: u32,
     }
 
@@ -717,6 +719,7 @@ program football_game_v001.aleo {
         puzzle_pieces_v015.leo/AuditJointPieceWinner.record,
         GameFinishReqNotification,
         GameFinishReqNotification,
+
     )
     {
 
@@ -741,7 +744,8 @@ program football_game_v001.aleo {
         let away_formation: [Player;11] = reveal_answer_notification_record.opponent_answer;
         let goals_home: u64 = 0u64;
         let goals_away: u64 = 0u64;
-        for i: u8 in 1u8..11u8 {
+        for i: u8 in 0u8..2u8 {
+        // for i: u8 in 1u8..11u8 { // put this back lol i gave keeper 200 attack 
             // See which team attacks 
             let attacker: Player = home_formation[i];
             let defender: Player = away_formation[i];
@@ -753,18 +757,17 @@ program football_game_v001.aleo {
                 goalkeeper = home_formation[0u8];
             }
 
-
             // Attacker shoots, attack stat determines if it's on target.
-            if  attacker.attack > 127u8 {
+            if (attacker.attack > 128u8) {
                 // Defender blocks, defense stat determines if it's blocked.
                 if defender.defense < 127u8 {
                     // Goalkeeper saves, goalkeeping stat determines if it's saved.
                     if goalkeeper.goalkeeping < 127u8 {
                         // If not saved, record the goal for attacking team.
                         if (home_formation[i].speed < away_formation[i].speed) {
-                            goals_home += 1u64;
-                        } else {
                             goals_away += 1u64;
+                        } else {
+                            goals_home += 1u64;
                         }
                     }
                 }
@@ -839,6 +842,8 @@ program football_game_v001.aleo {
             opponent_answer: reveal_answer_notification_record.opponent_answer,
             winner: winner_address,
             loser: loser_address,
+            goals_home: goals_home,
+            goals_away: goals_away,
             ix: 9u32,
         };
 
@@ -854,6 +859,8 @@ program football_game_v001.aleo {
             opponent_answer: reveal_answer_notification_record.opponent_answer,
             winner: winner_address,
             loser: loser_address,
+            goals_home: goals_home,
+            goals_away: goals_away,
             ix: 9u32,
         };
 
