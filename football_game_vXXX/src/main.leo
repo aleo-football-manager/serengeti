@@ -1,7 +1,6 @@
 import puzzle_pieces_v015.leo;
-// import multiparty_pvp_utils_v015.leo;
+// import multiparty_pvp_utils_v015.leo; // moved all files from this import in here
 
-// The 'coinflip' program.
 program football_game_v001.aleo {
     
     transition main (a: bool) {}
@@ -21,21 +20,6 @@ program football_game_v001.aleo {
         stamina: u8,
         technique: u8,
         goalkeeping: u8,
-    }
-    
-    // TODO: replace by nfts in V2.
-    mapping player_mapping: u8 => Player;
-
-    transition add_player (player: Player) {
-        // only owner can add players
-        // assert_eq(self.signer, self.signer);
-        // player_mapping[player.player_id] = player;
-        return then finalize(player);
-    }
-
-    finalize add_player (player: Player) {
-        assert(!Mapping::contains(player_mapping, player.player_id));
-        Mapping::set(player_mapping, player.player_id, player);
     }
 
     // ix: 1
@@ -1027,6 +1011,10 @@ program football_game_v001.aleo {
         let threshold_block_ht: u32 = joint_time_claim_block_ht + 10000u32;
         assert(current_block_ht > threshold_block_ht);
     }
+
+    /////////////////////////////
+    // multiparty_pvp_utils_v015 //
+    /////////////////////////////
 
     struct Mssage {
         field_1: field,
