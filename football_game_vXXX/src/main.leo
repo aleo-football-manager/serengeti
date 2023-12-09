@@ -22,6 +22,11 @@ program football_game_v001.aleo {
         goalkeeping: u8,
     }
 
+    struct GameResult {
+        goals_home: u64,
+        goals_away: u64,
+    }
+
     // ix: 1
     record Game {
         owner: address,
@@ -33,8 +38,6 @@ program football_game_v001.aleo {
         game_multisig: address,
         game_state: field,
         ix: u32,
-        goals_home: u64,
-        goals_away: u64,
     }
 
     // GAME STATE RECORDED ON NOTIFICATIONS
@@ -329,8 +332,6 @@ program football_game_v001.aleo {
             game_multisig: game_multisig,
             game_state: 1field,
             ix: 1u32,
-            goals_home: 0u64,
-            goals_away: 0u64,
         };
 
         // let puzzle_issuer: address = aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls;
@@ -669,8 +670,6 @@ program football_game_v001.aleo {
             game_multisig: game_record.game_multisig,
             game_state: 3field,
             ix: 1u32,
-            goals_home: game_record.goals_home,
-            goals_away: game_record.goals_away,
         };
 
         return (
@@ -702,41 +701,6 @@ program football_game_v001.aleo {
         assert(block_ht <= current_block_ht + 1000u32);
     }
 
-    // finalize reveal_answer_new (
-    //     opponent_answer: [u8;11],
-    //     answer: [u8;11]
-    // ) {
-    //     let goals_home: u64 = 0u64;
-    //     let goals_away: u64 = 0u64;
-    //     for i: u8 in 1u8..11u8 {
-    //         let attacker: Player = Mapping::get(player_mapping, answer[i]);
-    //         let defender: Player = Mapping::get(player_mapping, opponent_answer[i]);
-    //         let goalkeeper: Player = Mapping::get(player_mapping, opponent_answer[0u8]);
-    //         let switch_sides: bool = attacker.speed < defender.speed;
-    //         if switch_sides {
-    //             attacker = Mapping::get(player_mapping, opponent_answer[i]);
-    //             defender = Mapping::get(player_mapping, answer[i]);
-    //             goalkeeper = Mapping::get(player_mapping, answer[0u8]);
-    //         }
-
-
-    //         // Attacker shoots, attack stat determines if it's on target.
-    //         if  attacker.attack > ChaCha::rand_u8() {
-    //             // Defender blocks, defense stat determines if it's blocked.
-    //             if defender.defense < ChaCha::rand_u8() {
-    //                 // Goalkeeper saves, goalkeeping stat determines if it's saved.
-    //                 if goalkeeper.goalkeeping < ChaCha::rand_u8() {
-    //                     // If not saved, record the goal for attacking team.
-    //                     if (switch_sides) {
-    //                         goals_home += 1u64;
-    //                     } else {
-    //                         goals_away += 1u64;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 
 
     // called by challenger to reveal answer record
@@ -764,10 +728,48 @@ program football_game_v001.aleo {
         assert_eq(self.caller, self.signer);
 
         // determine winner! If opponent correctly picked where the challenger hid alex, the opponent wins otherwise the challenger wins
+        
+        // let winner_address: address = reveal_answer_notification_record.opponent_answer == challenger_answer_record.answer ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
+        // let loser_address: address = winner_address == challenger_answer_record.challenger_address ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
+        // let challenger_sig: signature = challenger_claim_signature.sig;
         // TODO - add logic to determine winner
         let winner_address: address = challenger_answer_record.challenger_address; // todo
         let loser_address: address = challenger_answer_record.challenger_address; // todo
         let challenger_sig: signature = challenger_claim_signature.sig; // todo
+
+        let home_formation: [Player;11] = challenger_answer_record.answer;
+        let away_formation: [Player;11] = reveal_answer_notification_record.opponent_answer;
+        let goals_home: u64 = 0u64;
+        let goals_away: u64 = 0u64;
+        for i: u8 in 1u8..11u8 {
+            // See which team attacks 
+            let attacker: Player = home_formation[i];
+            let defender: Player = away_formation[i];
+            let goalkeeper: Player = away_formation[0u8];
+
+            if (home_formation[i].speed < away_formation[i].speed) {
+                attacker = away_formation[i];
+                defender = home_formation[i];
+                goalkeeper = home_formation[0u8];
+            }
+
+
+            // Attacker shoots, attack stat determines if it's on target.
+            if  attacker.attack > 127u8 {
+                // Defender blocks, defense stat determines if it's blocked.
+                if defender.defense < 127u8 {
+                    // Goalkeeper saves, goalkeeping stat determines if it's saved.
+                    if goalkeeper.goalkeeping < 127u8 {
+                        // If not saved, record the goal for attacking team.
+                        if (home_formation[i].speed < away_formation[i].speed) {
+                            goals_home += 1u64;
+                        } else {
+                            goals_away += 1u64;
+                        }
+                    }
+                }
+            }
+        }
 
         // retrieve revealedanswer record
         // set puzzle issuing address as issuer:
@@ -898,8 +900,6 @@ program football_game_v001.aleo {
             game_multisig: game_record.game_multisig,
             game_state: 3field,
             ix: 0u32,
-            goals_home: game_record.goals_home,
-            goals_away: game_record.goals_away,
         };
 
         let game_finished_notification_challenger_record: GameFinishedNotification = GameFinishedNotification {
@@ -961,8 +961,6 @@ program football_game_v001.aleo {
             game_multisig: game_record.game_multisig,
             game_state: 3field,
             ix: 0u32,
-            goals_home: game_record.goals_home,
-            goals_away: game_record.goals_away,
         };
 
         // Notification to challenger of game finished
@@ -1106,5 +1104,6 @@ program football_game_v001.aleo {
         game_multisig: address,
         ix: u32,
     }
+
 
 }
