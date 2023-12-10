@@ -730,35 +730,29 @@ program football_game_v001.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        // determine winner! If opponent correctly picked where the challenger hid alex, the opponent wins otherwise the challenger wins
-        
-        // let winner_address: address = reveal_answer_notification_record.opponent_answer == challenger_answer_record.answer ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
-        // let loser_address: address = winner_address == challenger_answer_record.challenger_address ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
-        // let challenger_sig: signature = challenger_claim_signature.sig;
-        // TODO - add logic to determine winner
-        let winner_address: address = challenger_answer_record.challenger_address; // todo
-        let loser_address: address = challenger_answer_record.challenger_address; // todo
-        let challenger_sig: signature = challenger_claim_signature.sig; // todo
+
 
         let home_formation: [Player;11] = challenger_answer_record.answer;
         let away_formation: [Player;11] = reveal_answer_notification_record.opponent_answer;
         let goals_home: u64 = 0u64;
         let goals_away: u64 = 0u64;
-        for i: u8 in 0u8..2u8 {
+        for i: u8 in 1u8..11u8 {
         // for i: u8 in 1u8..11u8 { // put this back lol i gave keeper 200 attack 
             // See which team attacks 
-            let attacker: Player = home_formation[i];
-            let defender: Player = away_formation[i];
-            let goalkeeper: Player = away_formation[0u8];
+            let attacker: Player = home_formation[i].speed > away_formation[i].speed ? home_formation[i] : away_formation[i];
+            let defender: Player = home_formation[i].speed > away_formation[i].speed ? away_formation[i] : home_formation[i];
+            let goalkeeper: Player = home_formation[i].speed > away_formation[i].speed ? away_formation[0u8] : home_formation[0u8];
 
-            if (home_formation[i].speed < away_formation[i].speed) {
-                attacker = away_formation[i];
-                defender = home_formation[i];
-                goalkeeper = home_formation[0u8];
+            // Last iteration, in case of draw always score to make sure to have winner.
+            if (i == 10u8 && goals_home == goals_away) { 
+                if (home_formation[i].speed < away_formation[i].speed) {
+                    goals_away += 1u64;
+                } else {
+                    goals_home += 1u64;
+                }
             }
-
             // Attacker shoots, attack stat determines if it's on target.
-            if (attacker.attack > 128u8) {
+            else if (attacker.attack > 127u8) {
                 // Defender blocks, defense stat determines if it's blocked.
                 if defender.defense < 127u8 {
                     // Goalkeeper saves, goalkeeping stat determines if it's saved.
@@ -773,6 +767,11 @@ program football_game_v001.aleo {
                 }
             }
         }
+
+        // Determine winner!
+        let winner_address: address = goals_home > goals_away ? challenger_answer_record.challenger_address : challenger_answer_record.opponent_address; // todo
+        let loser_address: address = goals_home > goals_away ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address; // todo
+        let challenger_sig: signature = challenger_claim_signature.sig; // todo
 
         // retrieve revealedanswer record
         // set puzzle issuing address as issuer:
