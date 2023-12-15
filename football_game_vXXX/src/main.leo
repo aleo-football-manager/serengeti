@@ -1,7 +1,7 @@
 import puzzle_pieces_v015.leo;
 // import multiparty_pvp_utils_v015.leo; // moved all files from this import in here
 
-program football_game_v001.aleo {
+program football_game_v002.aleo {
     
     transition main (a: bool) {}
 
@@ -31,7 +31,7 @@ program football_game_v001.aleo {
     record Game {
         owner: address,
         challenger_commit: field,
-        opponent_answer: [Player; 11], // TODO how can we pass this val in accept game
+        opponent_answer: [Player; 11],
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
@@ -730,8 +730,6 @@ program football_game_v001.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-
-
         let home_formation: [Player;11] = challenger_answer_record.answer;
         let away_formation: [Player;11] = reveal_answer_notification_record.opponent_answer;
         let goals_home: u64 = 0u64;
@@ -743,16 +741,8 @@ program football_game_v001.aleo {
             let defender: Player = home_formation[i].speed > away_formation[i].speed ? away_formation[i] : home_formation[i];
             let goalkeeper: Player = home_formation[i].speed > away_formation[i].speed ? away_formation[0u8] : home_formation[0u8];
 
-            // Last iteration, in case of draw always score to make sure to have winner.
-            if (i == 10u8 && goals_home == goals_away) { 
-                if (home_formation[i].speed < away_formation[i].speed) {
-                    goals_away += 1u64;
-                } else {
-                    goals_home += 1u64;
-                }
-            }
             // Attacker shoots, attack stat determines if it's on target.
-            else if (attacker.attack > 127u8) {
+            if (attacker.attack > 127u8) {
                 // Defender blocks, defense stat determines if it's blocked.
                 if defender.defense < 127u8 {
                     // Goalkeeper saves, goalkeeping stat determines if it's saved.
@@ -768,10 +758,19 @@ program football_game_v001.aleo {
             }
         }
 
+        // Currently no draws allowed, so if goals are equal, add 1 to quickest team with quickest player.
+        const i: u8 = 10u8; // TODO randomize which player is selected (different player for both teams would be best? or doesnt matter?)
+        if (home_formation[i].speed < away_formation[i].speed) {
+            goals_away += 1u64;
+        } else {
+            goals_home += 1u64;
+        }
+
         // Determine winner!
-        let winner_address: address = goals_home > goals_away ? challenger_answer_record.challenger_address : challenger_answer_record.opponent_address; // todo
-        let loser_address: address = goals_home > goals_away ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address; // todo
-        let challenger_sig: signature = challenger_claim_signature.sig; // todo
+        // TODO: Allow draws? Modify puzzle contracts to allow draws
+        let winner_address: address = goals_home > goals_away ? challenger_answer_record.challenger_address : challenger_answer_record.opponent_address;
+        let loser_address: address = goals_home > goals_away ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
+        let challenger_sig: signature = challenger_claim_signature.sig;
 
         // retrieve revealedanswer record
         // set puzzle issuing address as issuer:
@@ -869,6 +868,7 @@ program football_game_v001.aleo {
     // called by ms key to finish the game and get the total pot!
     transition finish_game
     (
+        
         game_record: Game,
         joint_piece_winner: puzzle_pieces_v015.leo/JointPieceWinner.record,
         piece_joint_stake: puzzle_pieces_v015.leo/PieceJointStake.record,
