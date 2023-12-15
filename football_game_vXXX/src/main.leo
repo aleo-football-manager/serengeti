@@ -9,6 +9,19 @@ program football_game_v002.aleo {
     // MAPPING                 //
     /////////////////////////////
 
+// AVH0
+
+    mapping game_outcomes: u128 => GameOutcome;
+
+    /////////////////////////////
+    // STRUCTS                 //
+    /////////////////////////////
+
+    struct GameOutcome {
+        goals_home: u64,
+        goals_away: u64,
+    }
+
   struct Player {
         player_id: u8,
         team_id: u8,
@@ -703,6 +716,75 @@ program football_game_v002.aleo {
         assert(block_ht <= current_block_ht + 1000u32);
     }
 
+    // called by challenger to reveal answer record
+    transition calculate_outcome
+    (
+        reveal_answer_notification_record: RevealAnswerNotification,
+        challenger_answer_record: Answer,
+        joint_piece_state: puzzle_pieces_v015.leo/JointPieceState.record,
+    )
+    {
+
+        // assert that the correct state updater address is the challenger and the challenger
+        // is invoking this
+        assert_eq(joint_piece_state.state_updater_address, self.signer);
+
+        // assert contracts can't call this
+        assert_eq(self.caller, self.signer);
+        
+
+        return then finalize (reveal_answer_notification_record.opponent_answer, challenger_answer_record.answer);
+    }
+
+    finalize calculate_outcome (
+        home_formation: [Player; 11],
+        away_formation: [Player; 11],
+    ) {
+        // let home_formation: [Player;11] = challenger_answer_record.answer;
+        // let away_formation: [Player;11] = reveal_answer_notification_record.opponent_answer;
+        let goals_home: u64 = 0u64;
+        let goals_away: u64 = 0u64;
+        for i: u8 in 1u8..11u8 {
+        // for i: u8 in 1u8..11u8 { // put this back lol i gave keeper 200 attack 
+            // See which team attacks 
+            let attacker: Player = home_formation[i].speed > away_formation[i].speed ? home_formation[i] : away_formation[i];
+            let defender: Player = home_formation[i].speed > away_formation[i].speed ? away_formation[i] : home_formation[i];
+            let goalkeeper: Player = home_formation[i].speed > away_formation[i].speed ? away_formation[0u8] : home_formation[0u8];
+
+            // Attacker shoots, attack stat determines if it's on target.
+            if (attacker.attack > ChaCha::rand_u8()) {
+                // Defender blocks, defense stat determines if it's blocked.
+                if defender.defense < ChaCha::rand_u8() {
+                    // Goalkeeper saves, goalkeeping stat determines if it's saved.
+                    if goalkeeper.goalkeeping < ChaCha::rand_u8() {
+                        // If not saved, record the goal for attacking team.
+                        if (home_formation[i].speed < away_formation[i].speed) {
+                            goals_away += 1u64;
+                        } else {
+                            goals_home += 1u64;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Currently no draws allowed, so if goals are equal, add 1 to quickest team with quickest player.
+        // const i: u8 = ChaCha::rand_u8() % 10; // TODO MODULO
+        const i: u8 = 1u8;
+        if (home_formation[i].speed < away_formation[i].speed) {
+            goals_away += 1u64;
+        } else {
+            goals_home += 1u64;
+        }
+
+        let game_outcome: GameOutcome = GameOutcome {
+            goals_home,
+            goals_away,
+        };
+
+        let uuid :u128 = 0u128;
+        Mapping::set(game_outcomes, uuid, game_outcome);
+    }
 
 
     // called by challenger to reveal answer record
@@ -712,6 +794,8 @@ program football_game_v002.aleo {
         challenger_answer_record: Answer,
         joint_piece_state: puzzle_pieces_v015.leo/JointPieceState.record,
         challenger_claim_signature: puzzle_pieces_v015.leo/ClaimSignature.record,
+        uuid: u128,
+        game_outcome: GameOutcome,
     ) -> (
         RevealAnswer,
         AuditRevealAnswer,
@@ -730,41 +814,9 @@ program football_game_v002.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        let home_formation: [Player;11] = challenger_answer_record.answer;
-        let away_formation: [Player;11] = reveal_answer_notification_record.opponent_answer;
-        let goals_home: u64 = 0u64;
-        let goals_away: u64 = 0u64;
-        for i: u8 in 1u8..11u8 {
-        // for i: u8 in 1u8..11u8 { // put this back lol i gave keeper 200 attack 
-            // See which team attacks 
-            let attacker: Player = home_formation[i].speed > away_formation[i].speed ? home_formation[i] : away_formation[i];
-            let defender: Player = home_formation[i].speed > away_formation[i].speed ? away_formation[i] : home_formation[i];
-            let goalkeeper: Player = home_formation[i].speed > away_formation[i].speed ? away_formation[0u8] : home_formation[0u8];
-
-            // Attacker shoots, attack stat determines if it's on target.
-            if (attacker.attack > 127u8) {
-                // Defender blocks, defense stat determines if it's blocked.
-                if defender.defense < 127u8 {
-                    // Goalkeeper saves, goalkeeping stat determines if it's saved.
-                    if goalkeeper.goalkeeping < 127u8 {
-                        // If not saved, record the goal for attacking team.
-                        if (home_formation[i].speed < away_formation[i].speed) {
-                            goals_away += 1u64;
-                        } else {
-                            goals_home += 1u64;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Currently no draws allowed, so if goals are equal, add 1 to quickest team with quickest player.
-        const i: u8 = 10u8; // TODO randomize which player is selected (different player for both teams would be best? or doesnt matter?)
-        if (home_formation[i].speed < away_formation[i].speed) {
-            goals_away += 1u64;
-        } else {
-            goals_home += 1u64;
-        }
+        // TODO REMOVE THIS
+        let goals_home: u64 = game_outcome.goals_home;
+        let goals_away: u64 = game_outcome.goals_away;
 
         // Determine winner!
         // TODO: Allow draws? Modify puzzle contracts to allow draws
@@ -862,8 +914,18 @@ program football_game_v002.aleo {
             ix: 9u32,
         };
 
-        return (revealed_answer_record, audit_revealed_answer_record, joint_piece_winner, audit_joint_piece_winner, game_finish_req_notification_record_opponent, game_finish_req_notification_record_challenger);
+        return (revealed_answer_record, audit_revealed_answer_record, joint_piece_winner, audit_joint_piece_winner, game_finish_req_notification_record_opponent, game_finish_req_notification_record_challenger) 
+        then finalize (uuid, game_outcome)
+        ;
     }
+
+    finalize reveal_answer_game (uuid: u128, input_outcome: GameOutcome) {
+        // Compare the input outcome to the stored outcome from mapping.
+        let stored_outcome: GameOutcome = Mapping::get(game_outcomes, uuid);
+        assert_eq(input_outcome, stored_outcome);
+
+    }
+
 
     // called by ms key to finish the game and get the total pot!
     transition finish_game
