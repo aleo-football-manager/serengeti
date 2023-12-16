@@ -970,6 +970,8 @@ finalize reveal_answer_game:
     input r1 as GameOutcome.public;
     get game_outcomes[r0] into r2;
     assert.eq r1 r2;
+    assert.eq r1.goals_home r2.goals_home;
+    assert.eq r1.goals_away r2.goals_away;
 
 
 function finish_game:

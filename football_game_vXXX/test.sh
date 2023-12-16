@@ -182,6 +182,75 @@ PRIVATE_KEY=APrivateKey1zkp9p8bttYsy3EuwiGrb4PXmrtjzZkpGvBCGVCgvpcwVjUV
 
 
 echo "
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+#       CALCULATE OUTCOME
+"
+
+#leo run calculate_outcome
+
+# transition calculate_outcome
+#     (
+#         reveal_answer_notification_record: RevealAnswerNotification,
+#         challenger_answer_record: Answer,
+#         joint_piece_state: puzzle_pieces_v015.leo/JointPieceState.record,
+#     )
+
+leo run calculate_outcome "{
+    owner: aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls.private,
+    game_multisig: aleo1asu88azw3uqud282sll23wh3tvmvwjdz5vhvu2jwyrdwtgqn5qgqetuvr6.private,
+    game_state: 2field.private,
+    your_turn: true.private,
+    total_pot: 200u64.private,
+    challenger_address: aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls.private,
+    opponent_address: aleo1r4pc6ufjvw050jhzrew3vqm2lvacdxfd4a5ckulau0vjc72qvc8sr0jg2a.private,
+    opponent_answer: [{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 200u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private}],
+    ix: 8u32.private,
+    _nonce: 1091792808197594721170902092665224630304882664167687449788333149679412516284group.public
+    }" "{
+    owner: aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls.private,
+    challenger_address: aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls.private,
+    opponent_address: aleo1r4pc6ufjvw050jhzrew3vqm2lvacdxfd4a5ckulau0vjc72qvc8sr0jg2a.private,
+    game_multisig: aleo1asu88azw3uqud282sll23wh3tvmvwjdz5vhvu2jwyrdwtgqn5qgqetuvr6.private,
+    amount: 100u64.private,
+    nonce: 12345field.private,
+    answer: [{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 200u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private},{player_id: 0u8.private,team_id: 0u8.private,goalkeeper: false.private,attack: 0u8.private,defense: 0u8.private,speed: 0u8.private,power: 0u8.private,stamina: 0u8.private,technique: 0u8.private,goalkeeping: 0u8.private}],
+    message_1: 8062328565641143710315198539395259864274213782537700083868207132716559019626field.private,
+    message_2: 646976134778083579747150617209623060175268802563807996500102649727939562470field.private,
+    message_3: 7738966642647861988443742254957166327730088714215632067055062293849087980027field.private,
+    message_4: 501202936879316583063216806269060512965140130553350448375465909870676136661field.private,
+    message_5: 478560413032field.private,
+    ix: 1u32.private,
+    _nonce: 8069166363212571197507892496914884693017996020436521525224559444902132897860group.public
+  }" "{
+    owner: aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls.private,
+    amount: 200u64.private,
+    time_claimer_address: aleo1r4pc6ufjvw050jhzrew3vqm2lvacdxfd4a5ckulau0vjc72qvc8sr0jg2a.private,
+    state_updater_address: aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls.private,
+    message_1: 8062328565641143710315198539395259864274213782537700083868207132716559019626field.private,
+    message_2: 646976134778083579747150617209623060175268802563807996500102649727939562470field.private,
+    message_3: 7738966642647861988443742254957166327730088714215632067055062293849087980027field.private,
+    message_4: 501202936879316583063216806269060512965140130553350448375465909870676136661field.private,
+    message_5: 478560413032field.private,
+    challenger: aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls.private,
+    opponent: aleo1r4pc6ufjvw050jhzrew3vqm2lvacdxfd4a5ckulau0vjc72qvc8sr0jg2a.private,
+    game_multisig: aleo1asu88azw3uqud282sll23wh3tvmvwjdz5vhvu2jwyrdwtgqn5qgqetuvr6.private,
+    ix: 10u32.private,
+    _nonce: 2470010722608988519677726442477530592921661968898332863336157467478307956734group.public
+  }" 
+
+
+echo "
 #       :::::::::  :::::::::: :::     ::: ::::::::::     :::     :::
 #      :+:    :+: :+:        :+:     :+: :+:          :+: :+:   :+:
 #     +:+    +:+ +:+        +:+     +:+ +:+         +:+   +:+  +:+
@@ -260,7 +329,8 @@ leo run reveal_answer_game "{
     opponent: aleo1r4pc6ufjvw050jhzrew3vqm2lvacdxfd4a5ckulau0vjc72qvc8sr0jg2a.private,
     ix: 7u32.private,
     _nonce: 4194021521584400665115656892726113988149706319889301017657236676279353942892group.public
-  }"
+  }" 100u128 "{goals_home: 110u64, goals_away: 0u64}"
+
 
 
 # # Swap in the private key of the multisig.

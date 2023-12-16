@@ -10,7 +10,7 @@ program football_game_v002.aleo {
     /////////////////////////////
 
 // AVH0
-
+// TODO: Allow for multiple games to be played at once. Map on unique id
     mapping game_outcomes: u128 => GameOutcome;
 
     /////////////////////////////
@@ -59,11 +59,12 @@ program football_game_v002.aleo {
         // 1 -> challenger proposed game
         // 2 -> opponent matched wager
         // 3 -> accepted game
-        // 4 -> challenger revealed answer
-        // 5 -> finished game
+        // 4 -> challenger revealed answer + determine winner using randomness
+        // 5 -> process outcome and claim total pot
+        // 6 -> finished game
         //
         // ALTERNATE EXIT PATHS
-        // 6 -> timeout finished game
+        // 7 -> timeout finished game
         // 0 -> Game reneged
 
     // your turn:
@@ -923,6 +924,8 @@ program football_game_v002.aleo {
         // Compare the input outcome to the stored outcome from mapping.
         let stored_outcome: GameOutcome = Mapping::get(game_outcomes, uuid);
         assert_eq(input_outcome, stored_outcome);
+        assert_eq(input_outcome.goals_home, stored_outcome.goals_home);
+        assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
 
     }
 
