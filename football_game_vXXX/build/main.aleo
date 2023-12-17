@@ -1,6 +1,6 @@
 import puzzle_pieces_v015.aleo;
 import multiparty_pvp_utils_v015.aleo;
-program football_game_v002.aleo;
+program football_game_v004.aleo;
 
 
 
@@ -118,6 +118,17 @@ record WaitingRevealNotification:
     opponent_address as address.private;
     ix as u32.private;
 
+record CalculatedOutcomeNotification:
+    owner as address.private;
+    game_multisig as address.private;
+    game_state as field.private;
+    your_turn as boolean.private;
+    total_pot as u64.private;
+    challenger_address as address.private;
+    opponent_address as address.private;
+    result_mapping_uuid as u128.private;
+    ix as u32.private;
+
 record RevealAnswerNotification:
     owner as address.private;
     game_multisig as address.private;
@@ -170,7 +181,7 @@ function main:
 function add_player:
     input r0 as Player.private;
     async add_player r0 into r1;
-    output r1 as football_game_v002.aleo/add_player.future;
+    output r1 as football_game_v004.aleo/add_player.future;
 
 finalize add_player:
     input r0 as Player.public;
@@ -224,7 +235,7 @@ function propose_game:
     output r32 as Game.record;
     output r27 as GameReqNotification.record;
     output r29 as WaitingAcceptanceNotification.record;
-    output r35 as football_game_v002.aleo/propose_game.future;
+    output r35 as football_game_v004.aleo/propose_game.future;
 
 finalize propose_game:
     input r0 as [u8; 11u32].public;
@@ -312,7 +323,7 @@ function accept_game:
     output r11 as WaitingRevealNotification.record;
     output r12 as RevealAnswerNotification.record;
     output r13 as Game.record;
-    output r14 as football_game_v002.aleo/accept_game.future;
+    output r14 as football_game_v004.aleo/accept_game.future;
 
 finalize accept_game:
     input r0 as u32.public;
@@ -336,10 +347,11 @@ function calculate_outcome:
     assert.eq r2.state_updater_address self.signer;
     assert.eq self.caller self.signer;
     call multiparty_pvp_utils_v015.aleo/reveal_answer r3 r0.sig into r4 r5;
-    async calculate_outcome r1.opponent_answer r3.answer into r6;
+    cast r1.challenger_address r1.game_multisig 4field true r1.total_pot r1.challenger_address r1.opponent_address 0u128 8u32 into r6 as CalculatedOutcomeNotification.record;
+    async calculate_outcome r1.opponent_answer r3.answer into r7;
     output r3 as multiparty_pvp_utils_v015.aleo/Answer.record;
     output r2 as puzzle_pieces_v015.aleo/JointPieceState.record;
-    output r6 as football_game_v002.aleo/calculate_outcome.future;
+    output r7 as football_game_v004.aleo/calculate_outcome.future;
 
 finalize calculate_outcome:
     input r0 as [u8; 11u32].public;
@@ -940,8 +952,8 @@ function reveal_answer_game:
     ternary r8 r3.opponent_address r3.challenger_address into r9;
     call multiparty_pvp_utils_v015.aleo/reveal_answer r3 r0.sig into r10 r11;
     call puzzle_pieces_v015.aleo/joint_stake_state_update r2 r0 r7 into r12 r13;
-    cast r3.opponent_address r3.game_multisig 4field true r2.amount r3.challenger_address r3.opponent_address r3.answer r1.opponent_answer 9u32 into r14 as GameFinishReqNotification.record;
-    cast r3.challenger_address r3.game_multisig 4field true r2.amount r3.challenger_address r3.opponent_address r3.answer r1.opponent_answer 9u32 into r15 as GameFinishReqNotification.record;
+    cast r3.opponent_address r3.game_multisig 5field true r2.amount r3.challenger_address r3.opponent_address r3.answer r1.opponent_answer 9u32 into r14 as GameFinishReqNotification.record;
+    cast r3.challenger_address r3.game_multisig 5field true r2.amount r3.challenger_address r3.opponent_address r3.answer r1.opponent_answer 9u32 into r15 as GameFinishReqNotification.record;
     async reveal_answer_game r4 r5 into r16;
     output r10 as multiparty_pvp_utils_v015.aleo/RevealAnswer.record;
     output r11 as multiparty_pvp_utils_v015.aleo/AuditRevealAnswer.record;
@@ -949,7 +961,7 @@ function reveal_answer_game:
     output r13 as puzzle_pieces_v015.aleo/AuditJointPieceWinner.record;
     output r14 as GameFinishReqNotification.record;
     output r15 as GameFinishReqNotification.record;
-    output r16 as football_game_v002.aleo/reveal_answer_game.future;
+    output r16 as football_game_v004.aleo/reveal_answer_game.future;
 
 finalize reveal_answer_game:
     input r0 as u128.public;
@@ -975,8 +987,8 @@ function finish_game:
     ternary r8 r0.opponent_address r0.challenger_address into r9;
     call puzzle_pieces_v015.aleo/joint_stake_transfer_to_winner r1 r2 r3 into r10 r11 r12;
     cast r0.owner r0.challenger_commit r0.opponent_answer r0.total_pot r0.challenger_address r0.opponent_address r0.game_multisig 3field 0u32 into r13 as Game.record;
-    cast r0.challenger_address r0.game_multisig 5field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r9 10u32 into r14 as GameFinishedNotification.record;
-    cast r0.opponent_address r0.game_multisig 5field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r9 10u32 into r15 as GameFinishedNotification.record;
+    cast r0.challenger_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r9 10u32 into r14 as GameFinishedNotification.record;
+    cast r0.opponent_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r9 10u32 into r15 as GameFinishedNotification.record;
     output r10 as puzzle_pieces_v015.aleo/Piece.record;
     output r11 as puzzle_pieces_v015.aleo/AuditTransferToWinner.record;
     output r12 as puzzle_pieces_v015.aleo/AuditPieceOwner.record;
@@ -993,8 +1005,8 @@ function finish_game_by_timeout:
     assert.eq r0.owner self.signer;
     assert.eq self.caller self.signer;
     cast r0.owner r0.challenger_commit r0.opponent_answer r0.total_pot r0.challenger_address r0.opponent_address r0.game_multisig 3field 0u32 into r4 as Game.record;
-    cast r0.challenger_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_address r0.challenger_address 10u32 into r5 as GameFinishedNotification.record;
-    cast r0.opponent_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_address r0.challenger_address 10u32 into r6 as GameFinishedNotification.record;
+    cast r0.challenger_address r0.game_multisig 7field false r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_address r0.challenger_address 10u32 into r5 as GameFinishedNotification.record;
+    cast r0.opponent_address r0.game_multisig 7field false r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_address r0.challenger_address 10u32 into r6 as GameFinishedNotification.record;
     call puzzle_pieces_v015.aleo/joint_timeout_to_opponent r1 r2 r3 into r7 r8;
     async finish_game_by_timeout r2.block_ht into r9;
     output r7 as puzzle_pieces_v015.aleo/Piece.record;
@@ -1002,7 +1014,7 @@ function finish_game_by_timeout:
     output r4 as Game.record;
     output r5 as GameFinishedNotification.record;
     output r6 as GameFinishedNotification.record;
-    output r9 as football_game_v002.aleo/finish_game_by_timeout.future;
+    output r9 as football_game_v004.aleo/finish_game_by_timeout.future;
 
 finalize finish_game_by_timeout:
     input r0 as u32.public;

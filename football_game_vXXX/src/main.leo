@@ -1,7 +1,7 @@
 import puzzle_pieces_v015.leo;
 import multiparty_pvp_utils_v015.leo; // moved all files from this import in here
 
-program football_game_v002.aleo {
+program football_game_v004.aleo {
     
     transition main (a: bool) {}
 
@@ -69,12 +69,13 @@ program football_game_v002.aleo {
         // 1 -> challenger proposed game
         // 2 -> opponent matched wager
         // 3 -> accepted game
-        // 4 -> challenger revealed answer + determine winner using randomness
-        // 5 -> process outcome and claim total pot
-        // 6 -> finished game
+        // 4 -> determine winner using randomness
+        // 5 -> challenger revealed answer +
+        // 6 -> process outcome and claim total pot
+        // 7 -> finished game
         //
         // ALTERNATE EXIT PATHS
-        // 7 -> timeout finished game
+        // 9 -> timeout finished game
         // 0 -> Game reneged
 
     // your turn:
@@ -159,6 +160,21 @@ program football_game_v002.aleo {
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
+        ix: u32,
+    }
+    
+    // sent to opponent on accept game for FE/client detection.
+    // consumed in finish_game/claim total pot
+    // ix: 7
+    record CalculatedOutcomeNotification {
+        owner: address, //opponent
+        game_multisig: address,
+        game_state: field,
+        your_turn: bool,
+        total_pot: u64,
+        challenger_address: address,
+        opponent_address: address,
+        result_mapping_uuid: u128,
         ix: u32,
     }
 
@@ -701,6 +717,19 @@ program football_game_v002.aleo {
 
         let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = multiparty_pvp_utils_v015.leo/reveal_answer(challenger_answer_record, challenger_sig);
 
+        // sent to challenger on accept_game
+        let calculate_outcome_notification_record: CalculatedOutcomeNotification = CalculatedOutcomeNotification {
+            owner: reveal_answer_notification_record.challenger_address, //TODO is this correct?
+            game_multisig: reveal_answer_notification_record.game_multisig,
+            game_state: 4field,
+            your_turn: true,
+            total_pot: reveal_answer_notification_record.total_pot,
+            challenger_address: reveal_answer_notification_record.challenger_address,
+            opponent_address: reveal_answer_notification_record.opponent_address,
+            result_mapping_uuid: 0u128, //TODO generate somehow?
+            ix: 8u32,
+        };
+
         return (challenger_answer_record, joint_piece_state)
         
         then finalize (reveal_answer_notification_record.opponent_answer, challenger_answer_record.answer);
@@ -798,7 +827,7 @@ program football_game_v002.aleo {
         let game_finish_req_notification_record_opponent: GameFinishReqNotification = GameFinishReqNotification {
             owner: challenger_answer_record.opponent_address,
             game_multisig: challenger_answer_record.game_multisig,
-            game_state: 4field,
+            game_state: 5field,
             your_turn: true,
             total_pot: joint_piece_state.amount,
             challenger_address: challenger_answer_record.challenger_address,
@@ -811,7 +840,7 @@ program football_game_v002.aleo {
         let game_finish_req_notification_record_challenger: GameFinishReqNotification = GameFinishReqNotification{
             owner: challenger_answer_record.challenger_address,
             game_multisig: challenger_answer_record.game_multisig,
-            game_state: 4field,
+            game_state: 5field,
             your_turn: true,
             total_pot: joint_piece_state.amount,
             challenger_address: challenger_answer_record.challenger_address,
@@ -882,7 +911,7 @@ program football_game_v002.aleo {
         let game_finished_notification_challenger_record: GameFinishedNotification = GameFinishedNotification {
             owner: game_record.challenger_address,
             game_multisig: game_record.game_multisig,
-            game_state: 5field,
+            game_state: 6field,
             your_turn: false,
             total_pot: game_record.total_pot,
             challenger_address: game_record.challenger_address,
@@ -895,7 +924,7 @@ program football_game_v002.aleo {
         let game_finished_notification_opponent_record: GameFinishedNotification = GameFinishedNotification {
             owner: game_record.opponent_address,
             game_multisig: game_record.game_multisig,
-            game_state: 5field,
+            game_state: 6field,
             your_turn: false,
             total_pot: game_record.total_pot,
             challenger_address: game_record.challenger_address,
@@ -944,7 +973,7 @@ program football_game_v002.aleo {
         let game_finished_notification_challenger_record: GameFinishedNotification = GameFinishedNotification {
             owner: game_record.challenger_address,
             game_multisig: game_record.game_multisig,
-            game_state: 6field,
+            game_state: 7field,
             your_turn: false,
             total_pot: game_record.total_pot,
             challenger_address: game_record.challenger_address,
@@ -958,7 +987,7 @@ program football_game_v002.aleo {
         let game_finished_notification_opponent_record: GameFinishedNotification = GameFinishedNotification {
             owner: game_record.opponent_address,
             game_multisig: game_record.game_multisig,
-            game_state: 6field,
+            game_state: 7field,
             your_turn: false,
             total_pot: game_record.total_pot,
             challenger_address: game_record.challenger_address,
