@@ -1,26 +1,18 @@
 // The 'mapping_test' program.
-program mapping_test_avh3.aleo {
-    transition main(public a: bool){
-        
-    }
-
+program mapping_test_avh4.aleo {
     
-// AVH0
-// TODO: Allow for multiple games to be played at once. Map on unique id
-    mapping game_outcomes: u128 => GameOutcome;
-
-    /////////////////////////////
-    // STRUCTS                 //
-    /////////////////////////////
-
     struct GameOutcome {
         goals_home: u64,
-        goals_away: u64,
+        goals_away: u64
     }
+    
+    
+    mapping game_outcomes: (address, u128) => GameOutcome;
 
-    transition add_outcome_random () {
+    transition add_outcome_random () -> bool {
 
-        return then finalize;
+        return true
+        then finalize;
     
     }
 

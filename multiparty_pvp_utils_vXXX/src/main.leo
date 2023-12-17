@@ -1,5 +1,7 @@
 // The 'multiparty_pvp_utils_v015' program.
-program multiparty_pvp_utils_v015.aleo {
+program multiparty_pvp_utils_v015_avh.aleo {
+
+
     struct Mssage {
         field_1: field,
         field_2: field,
@@ -16,7 +18,7 @@ program multiparty_pvp_utils_v015.aleo {
         game_multisig: address,
         amount: u64,
         nonce: field,
-        answer: field,
+        answer: [u8; 11],
         message_1: field,
         message_2: field,
         message_3: field,
@@ -34,7 +36,7 @@ program multiparty_pvp_utils_v015.aleo {
         game_multisig: address,
         amount: u64,
         nonce: field,
-        answer: field,
+        answer: [u8; 11],
         message_1: field,
         message_2: field,
         message_3: field,
@@ -51,7 +53,7 @@ program multiparty_pvp_utils_v015.aleo {
         game_multisig: address,
         amount: u64,
         nonce: field,
-        answer: field,
+        answer: [u8; 11],
         sig: signature,
         ix: u32,
     }
@@ -64,7 +66,7 @@ program multiparty_pvp_utils_v015.aleo {
         game_multisig: address,
         amount: u64,
         nonce: field,
-        answer: field,
+        answer: [u8; 11],
         sig: signature
         ix: u32,
     }
@@ -100,7 +102,7 @@ program multiparty_pvp_utils_v015.aleo {
         game_multisig: address,
         amount: u64,
         nonce: field,
-        answer: field,
+        answer: [u8; 11],
         message_1: field,
         message_2: field,
         message_3: field,
@@ -234,7 +236,7 @@ program multiparty_pvp_utils_v015.aleo {
         let game_multisig: address = answer.game_multisig;
         let answer_amount: u64 = answer.amount;
         let answer_nonce: field = answer.nonce;
-        let answer_answer: field = answer.answer;
+        let answer_answer: [u8; 11] = answer.answer;
 
         let revealed_answer_record: RevealAnswer = RevealAnswer {
             owner: game_multisig,
