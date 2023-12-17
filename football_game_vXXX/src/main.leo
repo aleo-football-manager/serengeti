@@ -179,10 +179,6 @@ program football_game_v002.aleo {
         opponent_address: address,
         challenger_answer: [Player; 11],
         opponent_answer: [Player; 11],
-        winner: address,
-        loser: address,
-        goals_home: u64,
-        goals_away: u64,
         ix: u32,
     }
 
@@ -699,7 +695,6 @@ program football_game_v002.aleo {
         ) then finalize (block_ht);
     }
 
-
     finalize accept_game
     (
         block_ht: u32,
@@ -717,13 +712,18 @@ program football_game_v002.aleo {
         assert(block_ht <= current_block_ht + 1000u32);
     }
 
-    // called by challenger to reveal answer record
+    // called by challenger to calculate and store outcome
     transition calculate_outcome
     (
         reveal_answer_notification_record: RevealAnswerNotification,
         challenger_answer_record: Answer,
         joint_piece_state: puzzle_pieces_v015.leo/JointPieceState.record,
-    )
+        challenger_claim_signature: puzzle_pieces_v015.leo/ClaimSignature.record,
+    ) 
+    -> (
+        Answer,
+        puzzle_pieces_v015.leo/JointPieceState.record,
+        )
     {
 
         // assert that the correct state updater address is the challenger and the challenger
@@ -732,9 +732,83 @@ program football_game_v002.aleo {
 
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
-        
 
-        return then finalize (reveal_answer_notification_record.opponent_answer, challenger_answer_record.answer);
+        // determine winner! If opponent correctly picked where the challenger hid alex, the opponent wins otherwise the challenger wins
+        let challenger_sig: signature = challenger_claim_signature.sig;
+
+        // retrieve revealedanswer record
+
+        let puzzle_issuer: address = aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls;
+
+        // Verify that owner is challenger
+        assert_eq(challenger_answer_record.owner, challenger_answer_record.challenger_address);
+
+        // Verify signature from Cagainst message to guarantee challenger is caller
+        let msg: Mssage = Mssage {
+            field_1: challenger_answer_record.message_1,
+            field_2: challenger_answer_record.message_2,
+            field_3: challenger_answer_record.message_3,
+            field_4: challenger_answer_record.message_4,
+            field_5: challenger_answer_record.message_5
+        };
+
+        let signature_check: bool = true;
+        let is_valid_sig: bool = challenger_claim_signature.sig.verify(challenger_answer_record.challenger_address, msg);
+        assert_eq(signature_check,is_valid_sig);
+
+
+        let answer_owner: address = challenger_answer_record.owner;
+        let answer_challenger_address: address = challenger_answer_record.challenger_address;
+        let answer_opponent_address: address = challenger_answer_record.opponent_address;
+        let game_multisig: address = challenger_answer_record.game_multisig;
+        let answer_amount: u64 = challenger_answer_record.amount;
+        let answer_nonce: field = challenger_answer_record.nonce;
+        let answer_answer: [Player; 11] = challenger_answer_record.answer;
+
+        let revealed_answer_record: RevealAnswer = RevealAnswer {
+            owner: game_multisig,
+            challenger_address: answer_challenger_address,
+            opponent_address: answer_opponent_address,
+            game_multisig: game_multisig,
+            amount: answer_amount,
+            nonce: answer_nonce,
+            answer: answer_answer,
+            sig: challenger_claim_signature.sig,
+            ix: 3u32,
+        };
+
+        let audit_revealed_answer_record: AuditRevealAnswer = AuditRevealAnswer {
+            owner: puzzle_issuer,
+            challenger_address: answer_challenger_address,
+            opponent_address: answer_opponent_address,
+            game_multisig: game_multisig,
+            amount: answer_amount,
+            nonce: answer_nonce,
+            answer: answer_answer,
+            sig: challenger_claim_signature.sig,
+            ix: 4u32,
+        };
+
+
+        // TODO: why must i copy this to return but not joint_piece_state?
+        let unchanged_challenger_answer_record: Answer = Answer{
+            owner: challenger_answer_record.owner,
+            challenger_address: challenger_answer_record.challenger_address,
+            opponent_address: challenger_answer_record.opponent_address,
+            game_multisig: challenger_answer_record.game_multisig,
+            amount: challenger_answer_record.amount,
+            nonce: challenger_answer_record.nonce,
+            answer: challenger_answer_record.answer,
+            message_1: challenger_answer_record.message_1,
+            message_2: challenger_answer_record.message_2,
+            message_3: challenger_answer_record.message_3,
+            message_4: challenger_answer_record.message_4,
+            message_5: challenger_answer_record.message_5,
+            ix: 1u32,
+        };
+        return (unchanged_challenger_answer_record, joint_piece_state)
+        
+        then finalize (reveal_answer_notification_record.opponent_answer, challenger_answer_record.answer);
     }
 
     finalize calculate_outcome (
@@ -787,99 +861,17 @@ program football_game_v002.aleo {
         Mapping::set(game_outcomes, uuid, game_outcome);
     }
 
-
-    // called by challenger to reveal answer record
-    transition reveal_answer_game
-    (
-        reveal_answer_notification_record: RevealAnswerNotification,
-        challenger_answer_record: Answer,
+    transition reveal_answer (
         joint_piece_state: puzzle_pieces_v015.leo/JointPieceState.record,
         challenger_claim_signature: puzzle_pieces_v015.leo/ClaimSignature.record,
+        reveal_answer_notification_record: RevealAnswerNotification,
+        challenger_answer_record: Answer,
         uuid: u128,
         game_outcome: GameOutcome,
     ) -> (
-        RevealAnswer,
-        AuditRevealAnswer,
-        puzzle_pieces_v015.leo/JointPieceWinner.record,
-        puzzle_pieces_v015.leo/AuditJointPieceWinner.record,
         GameFinishReqNotification,
-        GameFinishReqNotification,
+        GameFinishReqNotification,) {
 
-    )
-    {
-
-        // assert that the correct state updater address is the challenger and the challenger
-        // is invoking this
-        assert_eq(joint_piece_state.state_updater_address, self.signer);
-
-        // assert contracts can't call this
-        assert_eq(self.caller, self.signer);
-
-        // TODO REMOVE THIS
-        let goals_home: u64 = game_outcome.goals_home;
-        let goals_away: u64 = game_outcome.goals_away;
-
-        // Determine winner!
-        // TODO: Allow draws? Modify puzzle contracts to allow draws
-        let winner_address: address = goals_home > goals_away ? challenger_answer_record.challenger_address : challenger_answer_record.opponent_address;
-        let loser_address: address = goals_home > goals_away ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
-        let challenger_sig: signature = challenger_claim_signature.sig;
-
-        // retrieve revealedanswer record
-        // set puzzle issuing address as issuer:
-        let puzzle_issuer: address = aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls;
-
-        // Verify that owner is challenger
-        assert_eq(challenger_answer_record.owner, challenger_answer_record.challenger_address);
-
-        // Verify signature from Cagainst message to guarantee challenger is caller
-        let msg: Mssage = Mssage {
-            field_1: challenger_answer_record.message_1,
-            field_2: challenger_answer_record.message_2,
-            field_3: challenger_answer_record.message_3,
-            field_4: challenger_answer_record.message_4,
-            field_5: challenger_answer_record.message_5
-        };
-
-        let signature_check: bool = true;
-        let is_valid_sig: bool = challenger_sig.verify(challenger_answer_record.challenger_address, msg);
-        assert_eq(signature_check,is_valid_sig);
-
-
-        let answer_owner: address = challenger_answer_record.owner;
-        let answer_challenger_address: address = challenger_answer_record.challenger_address;
-        let answer_opponent_address: address = challenger_answer_record.opponent_address;
-        let game_multisig: address = challenger_answer_record.game_multisig;
-        let answer_amount: u64 = challenger_answer_record.amount;
-        let answer_nonce: field = challenger_answer_record.nonce;
-        let answer_answer: [Player; 11] = challenger_answer_record.answer;
-
-        let revealed_answer_record: RevealAnswer = RevealAnswer {
-            owner: game_multisig,
-            challenger_address: answer_challenger_address,
-            opponent_address: answer_opponent_address,
-            game_multisig: game_multisig,
-            amount: answer_amount,
-            nonce: answer_nonce,
-            answer: answer_answer,
-            sig: challenger_sig,
-            ix: 3u32,
-        };
-
-        let audit_revealed_answer_record: AuditRevealAnswer = AuditRevealAnswer {
-            owner: puzzle_issuer,
-            challenger_address: answer_challenger_address,
-            opponent_address: answer_opponent_address,
-            game_multisig: game_multisig,
-            amount: answer_amount,
-            nonce: answer_nonce,
-            answer: answer_answer,
-            sig: challenger_sig,
-            ix: 4u32,
-        };
-        
-
-        let (joint_piece_winner, audit_joint_piece_winner): (JointPieceWinner, AuditJointPieceWinner) = puzzle_pieces_v015.leo/joint_stake_state_update(joint_piece_state, challenger_claim_signature, winner_address);
 
         let game_finish_req_notification_record_opponent: GameFinishReqNotification = GameFinishReqNotification {
             owner: challenger_answer_record.opponent_address,
@@ -891,10 +883,6 @@ program football_game_v002.aleo {
             opponent_address: challenger_answer_record.opponent_address,
             challenger_answer: challenger_answer_record.answer,
             opponent_answer: reveal_answer_notification_record.opponent_answer,
-            winner: winner_address,
-            loser: loser_address,
-            goals_home: goals_home,
-            goals_away: goals_away,
             ix: 9u32,
         };
 
@@ -908,36 +896,31 @@ program football_game_v002.aleo {
             opponent_address: challenger_answer_record.opponent_address,
             challenger_answer: challenger_answer_record.answer,
             opponent_answer: reveal_answer_notification_record.opponent_answer,
-            winner: winner_address,
-            loser: loser_address,
-            goals_home: goals_home,
-            goals_away: goals_away,
             ix: 9u32,
         };
-
-        return (revealed_answer_record, audit_revealed_answer_record, joint_piece_winner, audit_joint_piece_winner, game_finish_req_notification_record_opponent, game_finish_req_notification_record_challenger) 
-        then finalize (uuid, game_outcome)
-        ;
+    
+        return 
+        then finalize (uuid, game_outcome);
     }
 
-    finalize reveal_answer_game (uuid: u128, input_outcome: GameOutcome) {
+    
+    finalize reveal_answer (uuid: u128, input_outcome: GameOutcome) {
         // Compare the input outcome to the stored outcome from mapping.
         let stored_outcome: GameOutcome = Mapping::get(game_outcomes, uuid);
         assert_eq(input_outcome, stored_outcome);
         assert_eq(input_outcome.goals_home, stored_outcome.goals_home);
         assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
-
     }
-
 
     // called by ms key to finish the game and get the total pot!
     transition finish_game
     (
-        
         game_record: Game,
         joint_piece_winner: puzzle_pieces_v015.leo/JointPieceWinner.record,
         piece_joint_stake: puzzle_pieces_v015.leo/PieceJointStake.record,
         joint_piece_time_claim: puzzle_pieces_v015.leo/JointPieceTimeClaim.record,
+        uuid: u128,
+        game_outcome: GameOutcome,
     ) -> (
         puzzle_pieces_v015.leo/Piece.record,
         puzzle_pieces_v015.leo/AuditTransferToWinner.record,
@@ -953,7 +936,8 @@ program football_game_v002.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        let loser_address: address = joint_piece_winner.winner == game_record.challenger_address ? game_record.opponent_address : game_record.challenger_address;
+        let winner_address: address = game_outcome.goals_home > game_outcome.goals_away ? game_record.challenger_address : game_record.opponent_address;
+        let loser_address: address = game_outcome.goals_home > game_outcome.goals_away ? game_record.opponent_address : game_record.challenger_address;
 
         let (piece_record, audit_transfer_to_winner_record, audit_piece_owner): (Piece, AuditTransferToWinner, AuditPieceOwner) = puzzle_pieces_v015.leo/joint_stake_transfer_to_winner(
             joint_piece_winner,
@@ -1001,6 +985,7 @@ program football_game_v002.aleo {
 
         return (piece_record, audit_transfer_to_winner_record, audit_piece_owner, updated_game_record, game_finished_notification_challenger_record, game_finished_notification_opponent_record);
     }
+
 
     // called by ms key via opponent to finish the game and get the total pot!
     transition finish_game_by_timeout(

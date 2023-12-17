@@ -1,5 +1,5 @@
 // The 'mapping_test' program.
-program mapping_test_avh1.aleo {
+program mapping_test_avh3.aleo {
     transition main(public a: bool){
         
     }
@@ -18,13 +18,27 @@ program mapping_test_avh1.aleo {
         goals_away: u64,
     }
 
-    transition add_outcome (goals_home: u64, goals_away: u64) {
+    transition add_outcome_random () {
+
+        return then finalize;
+    
+    }
+
+    finalize add_outcome_random () {
+        let goals_home: u64 = ChaCha::rand_u64();
+        let goals_away: u64 = ChaCha::rand_u64();
+        Mapping::set(game_outcomes, 0u128, GameOutcome{goals_home, goals_away});
+    }
+
+    transition add_outcome_manual (goals_home: u64, goals_away: u64) {
 
         return then finalize (goals_home, goals_away);
     
     }
 
-    finalize add_outcome (goals_home: u64, goals_away: u64) {
+    finalize add_outcome_manual (goals_home: u64, goals_away: u64) {
         Mapping::set(game_outcomes, 0u128, GameOutcome{goals_home, goals_away});
     }
+
+
 }
