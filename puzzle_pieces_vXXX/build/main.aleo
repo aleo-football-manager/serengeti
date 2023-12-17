@@ -306,6 +306,39 @@ function joint_stake_state_update:
     output r15 as AuditJointPieceWinner.record;
 
 
+function joint_stake_state_update_draw:
+    input r0 as JointPieceState.record;
+    input r1 as ClaimSignature.record;
+    input r2 as address.private;
+    assert.eq r0.owner r1.owner;
+    assert.eq r0.state_updater_address r1.owner;
+    assert.eq r0.state_updater_address r1.challenger;
+    add r1.amount r1.amount into r3;
+    assert.eq r0.amount r3;
+    assert.eq r0.opponent r1.opponent;
+    assert.eq r0.game_multisig r0.game_multisig;
+    cast r0.message_1 r0.message_2 r0.message_3 r0.message_4 r0.message_5 into r4 as Message;
+    sign.verify r1.sig r0.state_updater_address r4 into r5;
+    assert.eq true r5;
+    is.eq r2 r0.challenger into r6;
+    not r6 into r7;
+    is.eq r2 r0.challenger into r8;
+    or r7 r8 into r9;
+    assert.eq r9 true;
+    not r6 into r10;
+    not r10 into r11;
+    is.eq r2 r0.opponent into r12;
+    or r11 r12 into r13;
+    assert.eq r13 true;
+    cast r0.game_multisig r0.amount r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.challenger 12u32 into r14 as JointPieceWinner.record;
+    cast r0.game_multisig r0.amount r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.opponent 12u32 into r15 as JointPieceWinner.record;
+    cast r0.game_multisig r0.amount r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r2 13u32 into r16 as AuditJointPieceWinner.record;
+    output r14 as JointPieceWinner.record;
+    output r16 as AuditJointPieceWinner.record;
+    output r15 as JointPieceWinner.record;
+    output r16 as AuditJointPieceWinner.record;
+
+
 function joint_stake_transfer_to_winner:
     input r0 as JointPieceWinner.record;
     input r1 as PieceJointStake.record;
