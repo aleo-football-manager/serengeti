@@ -7,7 +7,7 @@ program mapping_test_avh4.aleo {
     }
     
     
-    mapping game_outcomes: (address, u128) => GameOutcome;
+    mapping game_outcomes: u128 => GameOutcome;
 
     transition add_outcome_random () -> bool {
 
