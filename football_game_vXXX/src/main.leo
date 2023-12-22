@@ -20,8 +20,25 @@ program football_game_v005.aleo {
         return then finalize (player);
     }
     finalize add_player (player: Player) {
-        // TODO: Player with player_id 0 should have 0 for all stats. No overwrite allowed.
+        // Player with player_id 0 should have 0 for all stats. Don't allow manually adding this player_id.
+        if (player.player_id == 0u8) {
+            Mapping::set(players, player.player_id, Player{
+                player_id: 0u8,
+                team_id: 0u8,
+                position: 0field, // 0 = Emtpy, 1 = Goalkeep, 2 = Defense, 3 = Mid, 4 = Attack
+                attack: 0u8,
+                defense: 0u8,
+                speed: 0u8,
+                power: 0u8,
+                stamina: 0u8,
+                technique: 0u8,
+                goalkeeping: 0u8,
+            });
+        } else {
+        // TODO: Allow overwrites or not?
+        assert(player.position == 1field || player.position == 2field || player.position == 3field || player.position == 4field);
         Mapping::set(players, player.player_id, player);
+        }
     }
 
     function test (x: address) {
@@ -40,7 +57,7 @@ program football_game_v005.aleo {
   struct Player {
         player_id: u8,
         team_id: u8,
-        goalkeeper: bool,
+        position: field, // 0 = Emtpy, 1 = Goalkeep, 2 = Defense, 3 = Mid, 4 = Attack
         attack: u8,
         defense: u8,
         speed: u8,
@@ -391,9 +408,18 @@ program football_game_v005.aleo {
     finalize propose_game (
         challenger_answer: [u8; 11],
         ) {
-        // assert that player 1s answer is a valid formation
-        // assert(Mapping::get(players, challenger_answer[10u8]).player_id == challenger_answer[10u8]);
-        assert_eq(true, false);
+            let amount_goalkeepers: u8 = 0u8;
+            let same_team: bool = true;
+            let player_one: Player = Mapping::get(players, challenger_answer[0u8]);
+            
+            for i: u8 in 1u8..11u8 {
+                let player: Player = Mapping::get(players, challenger_answer[0u8]);
+                if (player.position == 1field) {
+                    amount_goalkeepers += 1u8;
+                }
+                assert_eq(player.team_id, player_one.team_id);
+            }
+            assert_eq(amount_goalkeepers, 1u8);
     }
 
     // challenger calls this function with Multisig key and signature as input
@@ -688,7 +714,20 @@ program football_game_v005.aleo {
         opponent_answer: [u8; 11],
     )
     {
-        assert(Mapping::get(players, opponent_answer[10u8]).player_id == opponent_answer[10u8]);
+        // Validate opponent formation
+        let amount_goalkeepers: u8 = 0u8;
+        let same_team: bool = true;
+        let player_one: Player = Mapping::get(players, opponent_answer[0u8]);
+        
+        for i: u8 in 1u8..11u8 {
+            let player: Player = Mapping::get(players, opponent_answer[0u8]);
+            if (player.position == 1field) {
+                amount_goalkeepers += 1u8;
+            }
+            assert_eq(player.team_id, player_one.team_id);
+        }
+        assert_eq(amount_goalkeepers, 1u8);
+
         // block every 5 seconds or so
         // would need to wait for time between `accept_game` req. from client to being proved
         // ~ 5s per block

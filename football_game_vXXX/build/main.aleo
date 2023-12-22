@@ -36,7 +36,7 @@ struct GameOutcome:
 struct Player:
     player_id as u8;
     team_id as u8;
-    goalkeeper as boolean;
+    position as field;
     attack as u8;
     defense as u8;
     speed as u8;
@@ -190,6 +190,20 @@ function add_player:
 
 finalize add_player:
     input r0 as Player.public;
+    is.eq r0.player_id 0u8 into r1;
+    cast 0u8 0u8 0field 0u8 0u8 0u8 0u8 0u8 0u8 0u8 into r2 as Player;
+    set r2 into players[r0.player_id];
+    is.eq r0.position 1field into r3;
+    is.eq r0.position 2field into r4;
+    or r3 r4 into r5;
+    is.eq r0.position 3field into r6;
+    or r5 r6 into r7;
+    is.eq r0.position 4field into r8;
+    or r7 r8 into r9;
+    not r1 into r10;
+    not r10 into r11;
+    or r11 r9 into r12;
+    assert.eq r12 true;
     set r0 into players[r0.player_id];
 
 
@@ -250,7 +264,58 @@ function propose_game:
 
 finalize propose_game:
     input r0 as [u8; 11u32].public;
-    assert.eq true false;
+    get players[r0[0u32]] into r1;
+    get players[r0[0u32]] into r2;
+    is.eq r2.position 1field into r3;
+    add 0u8 1u8 into r4;
+    ternary r3 r4 0u8 into r5;
+    assert.eq r2.team_id r1.team_id;
+    get players[r0[0u32]] into r6;
+    is.eq r6.position 1field into r7;
+    add r5 1u8 into r8;
+    ternary r7 r8 r5 into r9;
+    assert.eq r6.team_id r1.team_id;
+    get players[r0[0u32]] into r10;
+    is.eq r10.position 1field into r11;
+    add r9 1u8 into r12;
+    ternary r11 r12 r9 into r13;
+    assert.eq r10.team_id r1.team_id;
+    get players[r0[0u32]] into r14;
+    is.eq r14.position 1field into r15;
+    add r13 1u8 into r16;
+    ternary r15 r16 r13 into r17;
+    assert.eq r14.team_id r1.team_id;
+    get players[r0[0u32]] into r18;
+    is.eq r18.position 1field into r19;
+    add r17 1u8 into r20;
+    ternary r19 r20 r17 into r21;
+    assert.eq r18.team_id r1.team_id;
+    get players[r0[0u32]] into r22;
+    is.eq r22.position 1field into r23;
+    add r21 1u8 into r24;
+    ternary r23 r24 r21 into r25;
+    assert.eq r22.team_id r1.team_id;
+    get players[r0[0u32]] into r26;
+    is.eq r26.position 1field into r27;
+    add r25 1u8 into r28;
+    ternary r27 r28 r25 into r29;
+    assert.eq r26.team_id r1.team_id;
+    get players[r0[0u32]] into r30;
+    is.eq r30.position 1field into r31;
+    add r29 1u8 into r32;
+    ternary r31 r32 r29 into r33;
+    assert.eq r30.team_id r1.team_id;
+    get players[r0[0u32]] into r34;
+    is.eq r34.position 1field into r35;
+    add r33 1u8 into r36;
+    ternary r35 r36 r33 into r37;
+    assert.eq r34.team_id r1.team_id;
+    get players[r0[0u32]] into r38;
+    is.eq r38.position 1field into r39;
+    add r37 1u8 into r40;
+    ternary r39 r40 r37 into r41;
+    assert.eq r38.team_id r1.team_id;
+    assert.eq r41 1u8;
 
 
 function challenger_renege_stake:
@@ -339,15 +404,64 @@ function accept_game:
 finalize accept_game:
     input r0 as u32.public;
     input r1 as [u8; 11u32].public;
-    get players[r1[10u32]] into r2;
-    is.eq r2.player_id r1[10u32] into r3;
-    assert.eq r3 true;
-    sub block.height 1000u32 into r4;
-    gte r0 r4 into r5;
-    assert.eq r5 true;
-    add block.height 1000u32 into r6;
-    lte r0 r6 into r7;
-    assert.eq r7 true;
+    get players[r1[0u32]] into r2;
+    get players[r1[0u32]] into r3;
+    is.eq r3.position 1field into r4;
+    add 0u8 1u8 into r5;
+    ternary r4 r5 0u8 into r6;
+    assert.eq r3.team_id r2.team_id;
+    get players[r1[0u32]] into r7;
+    is.eq r7.position 1field into r8;
+    add r6 1u8 into r9;
+    ternary r8 r9 r6 into r10;
+    assert.eq r7.team_id r2.team_id;
+    get players[r1[0u32]] into r11;
+    is.eq r11.position 1field into r12;
+    add r10 1u8 into r13;
+    ternary r12 r13 r10 into r14;
+    assert.eq r11.team_id r2.team_id;
+    get players[r1[0u32]] into r15;
+    is.eq r15.position 1field into r16;
+    add r14 1u8 into r17;
+    ternary r16 r17 r14 into r18;
+    assert.eq r15.team_id r2.team_id;
+    get players[r1[0u32]] into r19;
+    is.eq r19.position 1field into r20;
+    add r18 1u8 into r21;
+    ternary r20 r21 r18 into r22;
+    assert.eq r19.team_id r2.team_id;
+    get players[r1[0u32]] into r23;
+    is.eq r23.position 1field into r24;
+    add r22 1u8 into r25;
+    ternary r24 r25 r22 into r26;
+    assert.eq r23.team_id r2.team_id;
+    get players[r1[0u32]] into r27;
+    is.eq r27.position 1field into r28;
+    add r26 1u8 into r29;
+    ternary r28 r29 r26 into r30;
+    assert.eq r27.team_id r2.team_id;
+    get players[r1[0u32]] into r31;
+    is.eq r31.position 1field into r32;
+    add r30 1u8 into r33;
+    ternary r32 r33 r30 into r34;
+    assert.eq r31.team_id r2.team_id;
+    get players[r1[0u32]] into r35;
+    is.eq r35.position 1field into r36;
+    add r34 1u8 into r37;
+    ternary r36 r37 r34 into r38;
+    assert.eq r35.team_id r2.team_id;
+    get players[r1[0u32]] into r39;
+    is.eq r39.position 1field into r40;
+    add r38 1u8 into r41;
+    ternary r40 r41 r38 into r42;
+    assert.eq r39.team_id r2.team_id;
+    assert.eq r42 1u8;
+    sub block.height 1000u32 into r43;
+    gte r0 r43 into r44;
+    assert.eq r44 true;
+    add block.height 1000u32 into r45;
+    lte r0 r45 into r46;
+    assert.eq r46 true;
 
 
 function calculate_outcome:
@@ -375,7 +489,7 @@ finalize calculate_outcome:
     gt r5.speed r6.speed into r7;
     ternary r7 r5.player_id r6.player_id into r8;
     ternary r7 r5.team_id r6.team_id into r9;
-    ternary r7 r5.goalkeeper r6.goalkeeper into r10;
+    ternary r7 r5.position r6.position into r10;
     ternary r7 r5.attack r6.attack into r11;
     ternary r7 r5.defense r6.defense into r12;
     ternary r7 r5.speed r6.speed into r13;
@@ -387,7 +501,7 @@ finalize calculate_outcome:
     gt r5.speed r6.speed into r19;
     ternary r19 r6.player_id r5.player_id into r20;
     ternary r19 r6.team_id r5.team_id into r21;
-    ternary r19 r6.goalkeeper r5.goalkeeper into r22;
+    ternary r19 r6.position r5.position into r22;
     ternary r19 r6.attack r5.attack into r23;
     ternary r19 r6.defense r5.defense into r24;
     ternary r19 r6.speed r5.speed into r25;
@@ -401,7 +515,7 @@ finalize calculate_outcome:
     get players[r1[0u32]] into r33;
     ternary r31 r32.player_id r33.player_id into r34;
     ternary r31 r32.team_id r33.team_id into r35;
-    ternary r31 r32.goalkeeper r33.goalkeeper into r36;
+    ternary r31 r32.position r33.position into r36;
     ternary r31 r32.attack r33.attack into r37;
     ternary r31 r32.defense r33.defense into r38;
     ternary r31 r32.speed r33.speed into r39;
@@ -432,7 +546,7 @@ finalize calculate_outcome:
     gt r62.speed r63.speed into r64;
     ternary r64 r62.player_id r63.player_id into r65;
     ternary r64 r62.team_id r63.team_id into r66;
-    ternary r64 r62.goalkeeper r63.goalkeeper into r67;
+    ternary r64 r62.position r63.position into r67;
     ternary r64 r62.attack r63.attack into r68;
     ternary r64 r62.defense r63.defense into r69;
     ternary r64 r62.speed r63.speed into r70;
@@ -444,7 +558,7 @@ finalize calculate_outcome:
     gt r62.speed r63.speed into r76;
     ternary r76 r63.player_id r62.player_id into r77;
     ternary r76 r63.team_id r62.team_id into r78;
-    ternary r76 r63.goalkeeper r62.goalkeeper into r79;
+    ternary r76 r63.position r62.position into r79;
     ternary r76 r63.attack r62.attack into r80;
     ternary r76 r63.defense r62.defense into r81;
     ternary r76 r63.speed r62.speed into r82;
@@ -458,7 +572,7 @@ finalize calculate_outcome:
     get players[r1[0u32]] into r90;
     ternary r88 r89.player_id r90.player_id into r91;
     ternary r88 r89.team_id r90.team_id into r92;
-    ternary r88 r89.goalkeeper r90.goalkeeper into r93;
+    ternary r88 r89.position r90.position into r93;
     ternary r88 r89.attack r90.attack into r94;
     ternary r88 r89.defense r90.defense into r95;
     ternary r88 r89.speed r90.speed into r96;
@@ -489,7 +603,7 @@ finalize calculate_outcome:
     gt r119.speed r120.speed into r121;
     ternary r121 r119.player_id r120.player_id into r122;
     ternary r121 r119.team_id r120.team_id into r123;
-    ternary r121 r119.goalkeeper r120.goalkeeper into r124;
+    ternary r121 r119.position r120.position into r124;
     ternary r121 r119.attack r120.attack into r125;
     ternary r121 r119.defense r120.defense into r126;
     ternary r121 r119.speed r120.speed into r127;
@@ -501,7 +615,7 @@ finalize calculate_outcome:
     gt r119.speed r120.speed into r133;
     ternary r133 r120.player_id r119.player_id into r134;
     ternary r133 r120.team_id r119.team_id into r135;
-    ternary r133 r120.goalkeeper r119.goalkeeper into r136;
+    ternary r133 r120.position r119.position into r136;
     ternary r133 r120.attack r119.attack into r137;
     ternary r133 r120.defense r119.defense into r138;
     ternary r133 r120.speed r119.speed into r139;
@@ -515,7 +629,7 @@ finalize calculate_outcome:
     get players[r1[0u32]] into r147;
     ternary r145 r146.player_id r147.player_id into r148;
     ternary r145 r146.team_id r147.team_id into r149;
-    ternary r145 r146.goalkeeper r147.goalkeeper into r150;
+    ternary r145 r146.position r147.position into r150;
     ternary r145 r146.attack r147.attack into r151;
     ternary r145 r146.defense r147.defense into r152;
     ternary r145 r146.speed r147.speed into r153;
@@ -546,7 +660,7 @@ finalize calculate_outcome:
     gt r176.speed r177.speed into r178;
     ternary r178 r176.player_id r177.player_id into r179;
     ternary r178 r176.team_id r177.team_id into r180;
-    ternary r178 r176.goalkeeper r177.goalkeeper into r181;
+    ternary r178 r176.position r177.position into r181;
     ternary r178 r176.attack r177.attack into r182;
     ternary r178 r176.defense r177.defense into r183;
     ternary r178 r176.speed r177.speed into r184;
@@ -558,7 +672,7 @@ finalize calculate_outcome:
     gt r176.speed r177.speed into r190;
     ternary r190 r177.player_id r176.player_id into r191;
     ternary r190 r177.team_id r176.team_id into r192;
-    ternary r190 r177.goalkeeper r176.goalkeeper into r193;
+    ternary r190 r177.position r176.position into r193;
     ternary r190 r177.attack r176.attack into r194;
     ternary r190 r177.defense r176.defense into r195;
     ternary r190 r177.speed r176.speed into r196;
@@ -572,7 +686,7 @@ finalize calculate_outcome:
     get players[r1[0u32]] into r204;
     ternary r202 r203.player_id r204.player_id into r205;
     ternary r202 r203.team_id r204.team_id into r206;
-    ternary r202 r203.goalkeeper r204.goalkeeper into r207;
+    ternary r202 r203.position r204.position into r207;
     ternary r202 r203.attack r204.attack into r208;
     ternary r202 r203.defense r204.defense into r209;
     ternary r202 r203.speed r204.speed into r210;
@@ -603,7 +717,7 @@ finalize calculate_outcome:
     gt r233.speed r234.speed into r235;
     ternary r235 r233.player_id r234.player_id into r236;
     ternary r235 r233.team_id r234.team_id into r237;
-    ternary r235 r233.goalkeeper r234.goalkeeper into r238;
+    ternary r235 r233.position r234.position into r238;
     ternary r235 r233.attack r234.attack into r239;
     ternary r235 r233.defense r234.defense into r240;
     ternary r235 r233.speed r234.speed into r241;
@@ -615,7 +729,7 @@ finalize calculate_outcome:
     gt r233.speed r234.speed into r247;
     ternary r247 r234.player_id r233.player_id into r248;
     ternary r247 r234.team_id r233.team_id into r249;
-    ternary r247 r234.goalkeeper r233.goalkeeper into r250;
+    ternary r247 r234.position r233.position into r250;
     ternary r247 r234.attack r233.attack into r251;
     ternary r247 r234.defense r233.defense into r252;
     ternary r247 r234.speed r233.speed into r253;
@@ -629,7 +743,7 @@ finalize calculate_outcome:
     get players[r1[0u32]] into r261;
     ternary r259 r260.player_id r261.player_id into r262;
     ternary r259 r260.team_id r261.team_id into r263;
-    ternary r259 r260.goalkeeper r261.goalkeeper into r264;
+    ternary r259 r260.position r261.position into r264;
     ternary r259 r260.attack r261.attack into r265;
     ternary r259 r260.defense r261.defense into r266;
     ternary r259 r260.speed r261.speed into r267;
@@ -660,7 +774,7 @@ finalize calculate_outcome:
     gt r290.speed r291.speed into r292;
     ternary r292 r290.player_id r291.player_id into r293;
     ternary r292 r290.team_id r291.team_id into r294;
-    ternary r292 r290.goalkeeper r291.goalkeeper into r295;
+    ternary r292 r290.position r291.position into r295;
     ternary r292 r290.attack r291.attack into r296;
     ternary r292 r290.defense r291.defense into r297;
     ternary r292 r290.speed r291.speed into r298;
@@ -672,7 +786,7 @@ finalize calculate_outcome:
     gt r290.speed r291.speed into r304;
     ternary r304 r291.player_id r290.player_id into r305;
     ternary r304 r291.team_id r290.team_id into r306;
-    ternary r304 r291.goalkeeper r290.goalkeeper into r307;
+    ternary r304 r291.position r290.position into r307;
     ternary r304 r291.attack r290.attack into r308;
     ternary r304 r291.defense r290.defense into r309;
     ternary r304 r291.speed r290.speed into r310;
@@ -686,7 +800,7 @@ finalize calculate_outcome:
     get players[r1[0u32]] into r318;
     ternary r316 r317.player_id r318.player_id into r319;
     ternary r316 r317.team_id r318.team_id into r320;
-    ternary r316 r317.goalkeeper r318.goalkeeper into r321;
+    ternary r316 r317.position r318.position into r321;
     ternary r316 r317.attack r318.attack into r322;
     ternary r316 r317.defense r318.defense into r323;
     ternary r316 r317.speed r318.speed into r324;
@@ -717,7 +831,7 @@ finalize calculate_outcome:
     gt r347.speed r348.speed into r349;
     ternary r349 r347.player_id r348.player_id into r350;
     ternary r349 r347.team_id r348.team_id into r351;
-    ternary r349 r347.goalkeeper r348.goalkeeper into r352;
+    ternary r349 r347.position r348.position into r352;
     ternary r349 r347.attack r348.attack into r353;
     ternary r349 r347.defense r348.defense into r354;
     ternary r349 r347.speed r348.speed into r355;
@@ -729,7 +843,7 @@ finalize calculate_outcome:
     gt r347.speed r348.speed into r361;
     ternary r361 r348.player_id r347.player_id into r362;
     ternary r361 r348.team_id r347.team_id into r363;
-    ternary r361 r348.goalkeeper r347.goalkeeper into r364;
+    ternary r361 r348.position r347.position into r364;
     ternary r361 r348.attack r347.attack into r365;
     ternary r361 r348.defense r347.defense into r366;
     ternary r361 r348.speed r347.speed into r367;
@@ -743,7 +857,7 @@ finalize calculate_outcome:
     get players[r1[0u32]] into r375;
     ternary r373 r374.player_id r375.player_id into r376;
     ternary r373 r374.team_id r375.team_id into r377;
-    ternary r373 r374.goalkeeper r375.goalkeeper into r378;
+    ternary r373 r374.position r375.position into r378;
     ternary r373 r374.attack r375.attack into r379;
     ternary r373 r374.defense r375.defense into r380;
     ternary r373 r374.speed r375.speed into r381;
@@ -774,7 +888,7 @@ finalize calculate_outcome:
     gt r404.speed r405.speed into r406;
     ternary r406 r404.player_id r405.player_id into r407;
     ternary r406 r404.team_id r405.team_id into r408;
-    ternary r406 r404.goalkeeper r405.goalkeeper into r409;
+    ternary r406 r404.position r405.position into r409;
     ternary r406 r404.attack r405.attack into r410;
     ternary r406 r404.defense r405.defense into r411;
     ternary r406 r404.speed r405.speed into r412;
@@ -786,7 +900,7 @@ finalize calculate_outcome:
     gt r404.speed r405.speed into r418;
     ternary r418 r405.player_id r404.player_id into r419;
     ternary r418 r405.team_id r404.team_id into r420;
-    ternary r418 r405.goalkeeper r404.goalkeeper into r421;
+    ternary r418 r405.position r404.position into r421;
     ternary r418 r405.attack r404.attack into r422;
     ternary r418 r405.defense r404.defense into r423;
     ternary r418 r405.speed r404.speed into r424;
@@ -800,7 +914,7 @@ finalize calculate_outcome:
     get players[r1[0u32]] into r432;
     ternary r430 r431.player_id r432.player_id into r433;
     ternary r430 r431.team_id r432.team_id into r434;
-    ternary r430 r431.goalkeeper r432.goalkeeper into r435;
+    ternary r430 r431.position r432.position into r435;
     ternary r430 r431.attack r432.attack into r436;
     ternary r430 r431.defense r432.defense into r437;
     ternary r430 r431.speed r432.speed into r438;
@@ -831,7 +945,7 @@ finalize calculate_outcome:
     gt r461.speed r462.speed into r463;
     ternary r463 r461.player_id r462.player_id into r464;
     ternary r463 r461.team_id r462.team_id into r465;
-    ternary r463 r461.goalkeeper r462.goalkeeper into r466;
+    ternary r463 r461.position r462.position into r466;
     ternary r463 r461.attack r462.attack into r467;
     ternary r463 r461.defense r462.defense into r468;
     ternary r463 r461.speed r462.speed into r469;
@@ -843,7 +957,7 @@ finalize calculate_outcome:
     gt r461.speed r462.speed into r475;
     ternary r475 r462.player_id r461.player_id into r476;
     ternary r475 r462.team_id r461.team_id into r477;
-    ternary r475 r462.goalkeeper r461.goalkeeper into r478;
+    ternary r475 r462.position r461.position into r478;
     ternary r475 r462.attack r461.attack into r479;
     ternary r475 r462.defense r461.defense into r480;
     ternary r475 r462.speed r461.speed into r481;
@@ -857,7 +971,7 @@ finalize calculate_outcome:
     get players[r1[0u32]] into r489;
     ternary r487 r488.player_id r489.player_id into r490;
     ternary r487 r488.team_id r489.team_id into r491;
-    ternary r487 r488.goalkeeper r489.goalkeeper into r492;
+    ternary r487 r488.position r489.position into r492;
     ternary r487 r488.attack r489.attack into r493;
     ternary r487 r488.defense r489.defense into r494;
     ternary r487 r488.speed r489.speed into r495;
@@ -888,7 +1002,7 @@ finalize calculate_outcome:
     gt r518.speed r519.speed into r520;
     ternary r520 r518.player_id r519.player_id into r521;
     ternary r520 r518.team_id r519.team_id into r522;
-    ternary r520 r518.goalkeeper r519.goalkeeper into r523;
+    ternary r520 r518.position r519.position into r523;
     ternary r520 r518.attack r519.attack into r524;
     ternary r520 r518.defense r519.defense into r525;
     ternary r520 r518.speed r519.speed into r526;
@@ -900,7 +1014,7 @@ finalize calculate_outcome:
     gt r518.speed r519.speed into r532;
     ternary r532 r519.player_id r518.player_id into r533;
     ternary r532 r519.team_id r518.team_id into r534;
-    ternary r532 r519.goalkeeper r518.goalkeeper into r535;
+    ternary r532 r519.position r518.position into r535;
     ternary r532 r519.attack r518.attack into r536;
     ternary r532 r519.defense r518.defense into r537;
     ternary r532 r519.speed r518.speed into r538;
@@ -914,7 +1028,7 @@ finalize calculate_outcome:
     get players[r1[0u32]] into r546;
     ternary r544 r545.player_id r546.player_id into r547;
     ternary r544 r545.team_id r546.team_id into r548;
-    ternary r544 r545.goalkeeper r546.goalkeeper into r549;
+    ternary r544 r545.position r546.position into r549;
     ternary r544 r545.attack r546.attack into r550;
     ternary r544 r545.defense r546.defense into r551;
     ternary r544 r545.speed r546.speed into r552;

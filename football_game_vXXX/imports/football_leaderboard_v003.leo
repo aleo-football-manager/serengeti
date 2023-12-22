@@ -11,7 +11,7 @@ program football_leaderboard_v003.aleo {
 
     transition update_leaderboard(home: address, away: address, goals_home: u64, goals_away: u64) {
         // TODO: Who is able to call this? Should not be able to be called by anyone, except game contract
-        assert_eq(self.caller, self.signer);
+        // assert_eq(self.caller, self.signer); 
         return then finalize(home, away, goals_home, goals_away);
     }
 
