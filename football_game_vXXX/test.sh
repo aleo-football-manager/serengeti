@@ -42,7 +42,7 @@ leo run propose_game "{
         amount: 500u64.private,
         ix: 0u32.private,
         _nonce: 5117772722354704202838157764917930913180509833961648133377098024993045952079group.public
-    }" 100u64 aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls aleo1r4pc6ufjvw050jhzrew3vqm2lvacdxfd4a5ckulau0vjc72qvc8sr0jg2a aleo1asu88azw3uqud282sll23wh3tvmvwjdz5vhvu2jwyrdwtgqn5qgqetuvr6 8062328565641143710315198539395259864274213782537700083868207132716559019626field 646976134778083579747150617209623060175268802563807996500102649727939562470field 7738966642647861988443742254957166327730088714215632067055062293849087980027field 501202936879316583063216806269060512965140130553350448375465909870676136661field 478560413032field sign1h04lnsl0t4aau8lzp06rzcm5eqrzr9ew63ljnw43v2nr7nkmsqqcx8cksna2ajwgk80rv0s7prrndw5k56sey3nrl487552lvaukuq8xe0cgu6x809qetnn35ufm3gl6ecyvtpgaavu9y5754j27utrwq8amruqyq2x6dvqs790yqsrctwmjnh3k7thslm0r9c3hpdvjrywpzts24xr 12345field "[0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8]" 98765field
+    }" 100u64 aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls aleo1r4pc6ufjvw050jhzrew3vqm2lvacdxfd4a5ckulau0vjc72qvc8sr0jg2a aleo1asu88azw3uqud282sll23wh3tvmvwjdz5vhvu2jwyrdwtgqn5qgqetuvr6 8062328565641143710315198539395259864274213782537700083868207132716559019626field 646976134778083579747150617209623060175268802563807996500102649727939562470field 7738966642647861988443742254957166327730088714215632067055062293849087980027field 501202936879316583063216806269060512965140130553350448375465909870676136661field 478560413032field sign1h04lnsl0t4aau8lzp06rzcm5eqrzr9ew63ljnw43v2nr7nkmsqqcx8cksna2ajwgk80rv0s7prrndw5k56sey3nrl487552lvaukuq8xe0cgu6x809qetnn35ufm3gl6ecyvtpgaavu9y5754j27utrwq8amruqyq2x6dvqs790yqsrctwmjnh3k7thslm0r9c3hpdvjrywpzts24xr 12345field "[0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8]" 98765field 0field
 
 
 # Swap in the private key of the opponent - Bob.
@@ -121,6 +121,7 @@ echo "
 
 leo run accept_game "{
     owner: aleo1asu88azw3uqud282sll23wh3tvmvwjdz5vhvu2jwyrdwtgqn5qgqetuvr6.private,
+    uuid: 1field.private,
     challenger_commit: 1632338669887332693450432112819554759682427161589172463360656597380489639523field.private,
     opponent_answer: [0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private],
     total_pot: 200u64.private,
@@ -188,7 +189,7 @@ echo "
 # CALCULATE OUTOME
 "
 
-#leo run reveal_answer
+#leo run calculate_answer
 
 # transition calculate_outcome
 #     ( 
@@ -216,6 +217,7 @@ leo run calculate_outcome "{
     challenger_address: aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls.private,
     opponent_address: aleo1r4pc6ufjvw050jhzrew3vqm2lvacdxfd4a5ckulau0vjc72qvc8sr0jg2a.private,
     opponent_answer: [0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private],
+    game_uuid: 0field.private,
     ix: 8u32.private,
     _nonce: 1091792808197594721170902092665224630304882664167687449788333149679412516284group.public
     }" "{
@@ -275,7 +277,6 @@ echo "
         # challenger_claim_signature: puzzle_pieces_v015.leo/ClaimSignature.record,
         # reveal_answer_notification_record: RevealAnswerNotification,
         # challenger_answer_record: multiparty_pvp_utils_v015.leo/Answer.record,
-        # uuid: u128,
         # game_outcome: GameOutcome,
 #     )
 
@@ -297,6 +298,7 @@ leo run reveal_answer_game "{
     challenger_address: aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls.private,
     opponent_address: aleo1r4pc6ufjvw050jhzrew3vqm2lvacdxfd4a5ckulau0vjc72qvc8sr0jg2a.private,
     opponent_answer: [0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private],
+    game_uuid: 0field.private,
     ix: 8u32.private,
     _nonce: 1091792808197594721170902092665224630304882664167687449788333149679412516284group.public
     }" "{
@@ -329,7 +331,7 @@ leo run reveal_answer_game "{
     message_5: 478560413032field.private,
     ix: 1u32.private,
     _nonce: 8069166363212571197507892496914884693017996020436521525224559444902132897860group.public
-  }" 0u128 "{goals_home: 0u64, goals_away: 0u64}"
+  }" "{goals_home: 0u64, goals_away: 0u64}"
 
 # Swap in the private key of the multisig.
 
@@ -361,13 +363,13 @@ echo "
 #       joint_piece_winner: puzzle_pieces_v015.leo/JointPieceWinner.record,
 #       piece_joint_stake: puzzle_pieces_v015.leo/PieceJointStake.record,
 #       joint_piece_time_claim: puzzle_pieces_v015.leo/JointPieceTimeClaim.record,
-#       uuid: u128,
 #       game_outcome: GameOutcome,
 #       )
 
 
 leo run finish_game "{
     owner: aleo1asu88azw3uqud282sll23wh3tvmvwjdz5vhvu2jwyrdwtgqn5qgqetuvr6.private,
+    uuid: 1field.private,    
     challenger_commit: 1632338669887332693450432112819554759682427161589172463360656597380489639523field.private,
     opponent_answer: [0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private,0u8.private],
     total_pot: 200u64.private,
@@ -412,4 +414,4 @@ leo run finish_game "{
     block_ht: 100000u32.private,
     ix: 10u32.private,
     _nonce: 2470010722608988519677726442477530592921661968898332863336157467478307956734group.public
-  }" 0u128 "{goals_home: 0u64, goals_away: 0u64}"
+  }" "{goals_home: 0u64, goals_away: 0u64}"
