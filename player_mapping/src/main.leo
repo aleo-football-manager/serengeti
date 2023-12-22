@@ -1,7 +1,7 @@
 // import puzzle_pieces_v015.leo;
 // import multiparty_pvp_utils_v015.leo; // moved all files from this import in here
 
-program player_mapping_v002.aleo {
+program player_mapping_v004.aleo {
     
     transition main (a: bool) {}
 
@@ -19,8 +19,6 @@ program player_mapping_v002.aleo {
     mapping player_mapping: u8 => SimplePlayer;
 
     transition add_player (player: SimplePlayer) {
-        // only owner can add players
-        // assert_eq(self.caller, self.signer);
         return then finalize(player);
     }
 
@@ -28,17 +26,17 @@ program player_mapping_v002.aleo {
         assert(!Mapping::contains(player_mapping, player.player_id));
         Mapping::set(player_mapping, player.player_id, player);
     }
-
-    transition add_player_owner (player: SimplePlayer) {
-        // only owner can add players
-        assert_eq(self.caller, self.signer);
-        return then finalize(player);
+    
+    transition add_all_players () {
+        return then finalize();
     }
 
-    finalize add_player_owner (player: SimplePlayer) {
-        assert(!Mapping::contains(player_mapping, player.player_id));
-        Mapping::set(player_mapping, player.player_id, player);
-    }
 
+    finalize add_all_players () {
+        for i: u8 in 1u8..11u8 {
+            Mapping::set(player_mapping, i, SimplePlayer{player_id: i, goalkeeper: false, attack: ChaCha::rand_u8()});
+        }
+        
+    }
 
 }
