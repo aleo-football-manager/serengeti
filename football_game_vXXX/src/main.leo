@@ -1,6 +1,6 @@
 import puzzle_pieces_v016.leo;
 import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
-import football_leaderboard_v002.leo;
+import football_leaderboard_v003.leo;
 
 program football_game_v005.aleo {
     
@@ -943,7 +943,7 @@ program football_game_v005.aleo {
             ix: 10u32,
         };
 
-        football_leaderboard_v002.leo/update_score_both_teams(game_record.challenger_address, game_record.opponent_address, game_outcome.goals_home, game_outcome.goals_home);
+        football_leaderboard_v003.leo/update_leaderboard(game_record.challenger_address, game_record.opponent_address, game_outcome.goals_home, game_outcome.goals_home);
 
         return (piece_record, audit_transfer_to_winner_record, audit_piece_owner, updated_game_record, game_finished_notification_challenger_record, game_finished_notification_opponent_record)
         then finalize(game_record.uuid, game_record.challenger_address, game_record.opponent_address, game_outcome);
@@ -954,9 +954,6 @@ program football_game_v005.aleo {
         let stored_outcome: GameOutcome = Mapping::get(game_outcomes, uuid);
         assert_eq(input_outcome.goals_home, stored_outcome.goals_home);
         assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
-        
-        // If outcome is correct, update leaderboard.    
-        // football_leaderboard_v002.leo/update_score_both_teams(home_address, away_address, input_outcome.goals_home, input_outcome.goals_away);
 
     }
 

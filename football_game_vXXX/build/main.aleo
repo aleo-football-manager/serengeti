@@ -1,6 +1,6 @@
 import puzzle_pieces_v016.aleo;
 import multiparty_pvp_utils_v015_avh.aleo;
-import football_leaderboard_v002.aleo;
+import football_leaderboard_v003.aleo;
 program football_game_v005.aleo;
 
 
@@ -998,7 +998,7 @@ function finish_game:
     cast r0.owner r0.uuid r0.challenger_commit r0.opponent_answer r0.total_pot r0.challenger_address r0.opponent_address r0.game_multisig 3field 0u32 into r12 as Game.record;
     cast r0.challenger_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r8 10u32 into r13 as GameFinishedNotification.record;
     cast r0.opponent_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r8 10u32 into r14 as GameFinishedNotification.record;
-    call football_leaderboard_v002.aleo/update_score_both_teams r0.challenger_address r0.opponent_address r4.goals_home r4.goals_home into r15;
+    call football_leaderboard_v003.aleo/update_leaderboard r0.challenger_address r0.opponent_address r4.goals_home r4.goals_home into r15;
     async finish_game r15 r0.uuid r0.challenger_address r0.opponent_address r4 into r16;
     output r9 as puzzle_pieces_v016.aleo/Piece.record;
     output r10 as puzzle_pieces_v016.aleo/AuditTransferToWinner.record;
@@ -1009,7 +1009,7 @@ function finish_game:
     output r16 as football_game_v005.aleo/finish_game.future;
 
 finalize finish_game:
-    input r0 as football_leaderboard_v002.aleo/update_score_both_teams.future;
+    input r0 as football_leaderboard_v003.aleo/update_leaderboard.future;
     input r1 as field.public;
     input r2 as address.public;
     input r3 as address.public;
