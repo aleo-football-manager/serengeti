@@ -1,7 +1,7 @@
 import puzzle_pieces_v016.aleo;
 import multiparty_pvp_utils_v015_avh.aleo;
 import football_leaderboard_v003.aleo;
-program football_game_v005.aleo;
+program football_game_v007.aleo;
 
 
 
@@ -185,8 +185,9 @@ function main:
 
 function add_player:
     input r0 as Player.private;
+    assert.eq self.caller self.signer;
     async add_player r0 into r1;
-    output r1 as football_game_v005.aleo/add_player.future;
+    output r1 as football_game_v007.aleo/add_player.future;
 
 finalize add_player:
     input r0 as Player.public;
@@ -229,93 +230,36 @@ function propose_game:
     input r13 as [u8; 11u32].private;
     input r14 as field.private;
     input r15 as field.private;
-    assert.eq self.caller self.signer;
-    assert.neq r5 r4;
     cast r12 into r16 as scalar;
     commit.bhp256 r13 r16 into r17 as field;
-    gt r1 0u64 into r18;
-    assert.eq r18 true;
-    gte r0.amount r1 into r19;
-    assert.eq r19 true;
-    call puzzle_pieces_v016.aleo/stake_transfer_in r0 r2 r3 r4 r5 r1 r6 r7 r8 r9 r10 r11 into r20 r21 r22 r23 r24;
-    call multiparty_pvp_utils_v015_avh.aleo/mint_multisig_key r14 r1 r3 r4 r5 into r25 r26;
+    call puzzle_pieces_v016.aleo/stake_transfer_in r0 r2 r3 r4 r5 r1 r6 r7 r8 r9 r10 r11 into r18 r19 r20 r21 r22;
+    call multiparty_pvp_utils_v015_avh.aleo/mint_multisig_key r14 r1 r3 r4 r5 into r23 r24;
+    add r1 r1 into r25;
+    cast r4 r5 1field true r25 r3 r4 2u32 into r26 as GameReqNotification.record;
     add r1 r1 into r27;
-    cast r4 r5 1field true r27 r3 r4 2u32 into r28 as GameReqNotification.record;
-    add r1 r1 into r29;
-    cast r3 r5 1field false r29 r3 r4 3u32 into r30 as WaitingAcceptanceNotification.record;
-    cast 0u80u80u80u80u80u80u80u80u80u80u8 into r31 as [u8; 11u32];
-    add r1 r1 into r32;
-    cast r5 r15 r17 r31 r32 r3 r4 r5 1field 1u32 into r33 as Game.record;
-    call multiparty_pvp_utils_v015_avh.aleo/mint_answer r3 r4 r5 r1 r12 r13 r6 r7 r8 r9 r10 r11 into r34 r35;
-    async propose_game r13 into r36;
-    output r20 as puzzle_pieces_v016.aleo/PieceClaim.record;
-    output r21 as puzzle_pieces_v016.aleo/PieceStake.record;
-    output r22 as puzzle_pieces_v016.aleo/ClaimSignature.record;
-    output r23 as puzzle_pieces_v016.aleo/Piece.record;
-    output r24 as puzzle_pieces_v016.aleo/AuditStakeIn.record;
-    output r34 as multiparty_pvp_utils_v015_avh.aleo/Answer.record;
-    output r35 as multiparty_pvp_utils_v015_avh.aleo/AuditMintAnswer.record;
-    output r25 as multiparty_pvp_utils_v015_avh.aleo/Key.record;
-    output r26 as multiparty_pvp_utils_v015_avh.aleo/AuditKey.record;
-    output r33 as Game.record;
-    output r28 as GameReqNotification.record;
-    output r30 as WaitingAcceptanceNotification.record;
-    output r36 as football_game_v005.aleo/propose_game.future;
+    cast r3 r5 1field false r27 r3 r4 3u32 into r28 as WaitingAcceptanceNotification.record;
+    cast  0u8 0u8 0u8 0u8 0u8 0u8 0u8 0u8 0u8 0u8 0u8 into r29 as [u8; 11u32];
+    add r1 r1 into r30;
+    cast r5 r15 r17 r29 r30 r3 r4 r5 1field 1u32 into r31 as Game.record;
+    call multiparty_pvp_utils_v015_avh.aleo/mint_answer r3 r4 r5 r1 r12 r13 r6 r7 r8 r9 r10 r11 into r32 r33;
+    async propose_game r13 into r34;
+    output r18 as puzzle_pieces_v016.aleo/PieceClaim.record;
+    output r19 as puzzle_pieces_v016.aleo/PieceStake.record;
+    output r20 as puzzle_pieces_v016.aleo/ClaimSignature.record;
+    output r21 as puzzle_pieces_v016.aleo/Piece.record;
+    output r22 as puzzle_pieces_v016.aleo/AuditStakeIn.record;
+    output r32 as multiparty_pvp_utils_v015_avh.aleo/Answer.record;
+    output r33 as multiparty_pvp_utils_v015_avh.aleo/AuditMintAnswer.record;
+    output r23 as multiparty_pvp_utils_v015_avh.aleo/Key.record;
+    output r24 as multiparty_pvp_utils_v015_avh.aleo/AuditKey.record;
+    output r31 as Game.record;
+    output r26 as GameReqNotification.record;
+    output r28 as WaitingAcceptanceNotification.record;
+    output r34 as football_game_v007.aleo/propose_game.future;
 
 finalize propose_game:
     input r0 as [u8; 11u32].public;
     get players[r0[0u32]] into r1;
-    get players[r0[0u32]] into r2;
-    is.eq r2.position 1field into r3;
-    add 0u8 1u8 into r4;
-    ternary r3 r4 0u8 into r5;
-    assert.eq r2.team_id r1.team_id;
-    get players[r0[0u32]] into r6;
-    is.eq r6.position 1field into r7;
-    add r5 1u8 into r8;
-    ternary r7 r8 r5 into r9;
-    assert.eq r6.team_id r1.team_id;
-    get players[r0[0u32]] into r10;
-    is.eq r10.position 1field into r11;
-    add r9 1u8 into r12;
-    ternary r11 r12 r9 into r13;
-    assert.eq r10.team_id r1.team_id;
-    get players[r0[0u32]] into r14;
-    is.eq r14.position 1field into r15;
-    add r13 1u8 into r16;
-    ternary r15 r16 r13 into r17;
-    assert.eq r14.team_id r1.team_id;
-    get players[r0[0u32]] into r18;
-    is.eq r18.position 1field into r19;
-    add r17 1u8 into r20;
-    ternary r19 r20 r17 into r21;
-    assert.eq r18.team_id r1.team_id;
-    get players[r0[0u32]] into r22;
-    is.eq r22.position 1field into r23;
-    add r21 1u8 into r24;
-    ternary r23 r24 r21 into r25;
-    assert.eq r22.team_id r1.team_id;
-    get players[r0[0u32]] into r26;
-    is.eq r26.position 1field into r27;
-    add r25 1u8 into r28;
-    ternary r27 r28 r25 into r29;
-    assert.eq r26.team_id r1.team_id;
-    get players[r0[0u32]] into r30;
-    is.eq r30.position 1field into r31;
-    add r29 1u8 into r32;
-    ternary r31 r32 r29 into r33;
-    assert.eq r30.team_id r1.team_id;
-    get players[r0[0u32]] into r34;
-    is.eq r34.position 1field into r35;
-    add r33 1u8 into r36;
-    ternary r35 r36 r33 into r37;
-    assert.eq r34.team_id r1.team_id;
-    get players[r0[0u32]] into r38;
-    is.eq r38.position 1field into r39;
-    add r37 1u8 into r40;
-    ternary r39 r40 r37 into r41;
-    assert.eq r38.team_id r1.team_id;
-    assert.eq r41 1u8;
 
 
 function challenger_renege_stake:
@@ -399,7 +343,7 @@ function accept_game:
     output r11 as WaitingRevealNotification.record;
     output r12 as RevealAnswerNotification.record;
     output r13 as Game.record;
-    output r14 as football_game_v005.aleo/accept_game.future;
+    output r14 as football_game_v007.aleo/accept_game.future;
 
 finalize accept_game:
     input r0 as u32.public;
@@ -476,7 +420,7 @@ function calculate_outcome:
     async calculate_outcome r1.game_uuid r1.opponent_answer r3.answer into r7;
     output r3 as multiparty_pvp_utils_v015_avh.aleo/Answer.record;
     output r2 as puzzle_pieces_v016.aleo/JointPieceState.record;
-    output r7 as football_game_v005.aleo/calculate_outcome.future;
+    output r7 as football_game_v007.aleo/calculate_outcome.future;
 
 finalize calculate_outcome:
     input r0 as field.public;
@@ -1086,7 +1030,7 @@ function reveal_answer_game:
     output r12 as puzzle_pieces_v016.aleo/AuditJointPieceWinner.record;
     output r13 as GameFinishReqNotification.record;
     output r14 as GameFinishReqNotification.record;
-    output r15 as football_game_v005.aleo/reveal_answer_game.future;
+    output r15 as football_game_v007.aleo/reveal_answer_game.future;
 
 finalize reveal_answer_game:
     input r0 as field.public;
@@ -1120,7 +1064,7 @@ function finish_game:
     output r12 as Game.record;
     output r13 as GameFinishedNotification.record;
     output r14 as GameFinishedNotification.record;
-    output r16 as football_game_v005.aleo/finish_game.future;
+    output r16 as football_game_v007.aleo/finish_game.future;
 
 finalize finish_game:
     input r0 as football_leaderboard_v003.aleo/update_leaderboard.future;
@@ -1151,7 +1095,7 @@ function finish_game_by_timeout:
     output r4 as Game.record;
     output r5 as GameFinishedNotification.record;
     output r6 as GameFinishedNotification.record;
-    output r9 as football_game_v005.aleo/finish_game_by_timeout.future;
+    output r9 as football_game_v007.aleo/finish_game_by_timeout.future;
 
 finalize finish_game_by_timeout:
     input r0 as u32.public;

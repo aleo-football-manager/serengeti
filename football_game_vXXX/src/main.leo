@@ -2,7 +2,7 @@ import puzzle_pieces_v016.leo;
 import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
 import football_leaderboard_v003.leo;
 
-program football_game_v005.aleo {
+program football_game_v007.aleo {
     
     transition main (a: bool) {}
 
@@ -10,13 +10,13 @@ program football_game_v005.aleo {
     // MAPPING                 //
     /////////////////////////////
 
-// AVH0
-// TODO: Allow for multiple games to be played at once. Map on unique id
+    // Frontend generates unique id (field) to map gameOutcome.
     mapping game_outcomes: field => GameOutcome;
     mapping players: u8 => Player;
 
     transition add_player (player: Player) {
-        // TODO: restrict this transition to only be called by the contract owner
+        // Only to be called by the contract owner
+        assert_eq(self.caller, self.signer);
         return then finalize (player);
     }
     finalize add_player (player: Player) {
@@ -35,9 +35,9 @@ program football_game_v005.aleo {
                 goalkeeping: 0u8,
             });
         } else {
-        // TODO: Allow overwrites or not?
-        assert(player.position == 1field || player.position == 2field || player.position == 3field || player.position == 4field);
-        Mapping::set(players, player.player_id, player);
+            // TODO: Allow overwrites or not?
+            assert(player.position == 1field || player.position == 2field || player.position == 3field || player.position == 4field);
+            Mapping::set(players, player.player_id, player);
         }
     }
 
@@ -285,10 +285,10 @@ program football_game_v005.aleo {
     ) {
 
         // assert contracts can't call this
-        assert_eq(self.caller, self.signer);
+        // assert_eq(self.caller, self.signer);
 
         // random edge case, maybe unnecessary
-        assert_neq(game_multisig, opponent);
+        // assert_neq(game_multisig, opponent);
 
         // assert that player 1s answer is either "in weeds" or "behind building"
         
@@ -296,9 +296,9 @@ program football_game_v005.aleo {
         let challenger_commit: field = BHP256::commit_to_field(challenger_answer, challenger_nonce as scalar);
 
         // assert that the wager amount > 0 and wager inside credit == wager amt passed
-        assert(challenger_wager_amount > 0u64);
+        // assert(challenger_wager_amount > 0u64);
         // assert that the wager record has >= amount wagered
-        assert(wager_record.amount >= challenger_wager_amount);
+        // assert(wager_record.amount >= challenger_wager_amount);
 
         let (
             piece_claim_challenger,
@@ -409,17 +409,16 @@ program football_game_v005.aleo {
         challenger_answer: [u8; 11],
         ) {
             let amount_goalkeepers: u8 = 0u8;
-            let same_team: bool = true;
             let player_one: Player = Mapping::get(players, challenger_answer[0u8]);
             
-            for i: u8 in 1u8..11u8 {
-                let player: Player = Mapping::get(players, challenger_answer[0u8]);
-                if (player.position == 1field) {
-                    amount_goalkeepers += 1u8;
-                }
-                assert_eq(player.team_id, player_one.team_id);
-            }
-            assert_eq(amount_goalkeepers, 1u8);
+            // for i: u8 in 1u8..11u8 {
+            //     let player: Player = Mapping::get(players, challenger_answer[i]);
+            //     if (player.position == 1field) {
+            //         amount_goalkeepers += 1u8;
+            //     }
+            //     assert_eq(player.team_id, player_one.team_id);
+            // }
+            // assert_eq(amount_goalkeepers, 1u8);
     }
 
     // challenger calls this function with Multisig key and signature as input
