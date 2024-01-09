@@ -2,7 +2,7 @@ import puzzle_pieces_v016.leo;
 import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
 import football_leaderboard_v003.leo;
 
-program football_game_v007.aleo {
+program football_game_v008.aleo {
     
     transition main (a: bool) {}
 
@@ -400,25 +400,8 @@ program football_game_v007.aleo {
             game_record,
             game_request_notification_record,
             game_waiting_acceptance_notification_record,
-        )
-        then finalize (challenger_answer);
+        );
         
-    }
-
-    finalize propose_game (
-        challenger_answer: [u8; 11],
-        ) {
-            let amount_goalkeepers: u8 = 0u8;
-            let player_one: Player = Mapping::get(players, challenger_answer[0u8]);
-            
-            // for i: u8 in 1u8..11u8 {
-            //     let player: Player = Mapping::get(players, challenger_answer[i]);
-            //     if (player.position == 1field) {
-            //         amount_goalkeepers += 1u8;
-            //     }
-            //     assert_eq(player.team_id, player_one.team_id);
-            // }
-            // assert_eq(amount_goalkeepers, 1u8);
     }
 
     // challenger calls this function with Multisig key and signature as input
@@ -713,20 +696,6 @@ program football_game_v007.aleo {
         opponent_answer: [u8; 11],
     )
     {
-        // Validate opponent formation
-        let amount_goalkeepers: u8 = 0u8;
-        let same_team: bool = true;
-        let player_one: Player = Mapping::get(players, opponent_answer[0u8]);
-        
-        for i: u8 in 1u8..11u8 {
-            let player: Player = Mapping::get(players, opponent_answer[0u8]);
-            if (player.position == 1field) {
-                amount_goalkeepers += 1u8;
-            }
-            assert_eq(player.team_id, player_one.team_id);
-        }
-        assert_eq(amount_goalkeepers, 1u8);
-
         // block every 5 seconds or so
         // would need to wait for time between `accept_game` req. from client to being proved
         // ~ 5s per block
@@ -790,8 +759,9 @@ program football_game_v007.aleo {
         home_formation: [u8; 11],
         away_formation: [u8; 11],
     ) {
-        // let home_formation: [Player;11] = challenger_answer_record.answer;
-        // let away_formation: [Player;11] = reveal_answer_notification_record.opponent_answer;
+        // TODO: first validate both formations. 
+        // In case of 1 invalid formation: Payout other player.
+        // 2 valid formations > ?? (draw is not yet implemented)
         let goals_home: u64 = 0u64;
         let goals_away: u64 = 0u64;
 
