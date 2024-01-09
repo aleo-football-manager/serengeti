@@ -169,6 +169,14 @@ record GameFinishedNotification:
     loser as address.private;
     ix as u32.private;
 
+record PlayerAddedNotification:
+    owner as address.private;
+    player as Player.private;
+
+record FormationValidatedNotification:
+    owner as address.private;
+    formation as [u8; 11u32].private;
+
 
 mapping game_outcomes:
 	key as field.public;
@@ -186,8 +194,10 @@ function main:
 function add_player:
     input r0 as Player.private;
     assert.eq self.caller self.signer;
-    async add_player r0 into r1;
-    output r1 as football_game_v008.aleo/add_player.future;
+    cast self.caller r0 into r1 as PlayerAddedNotification.record;
+    async add_player r0 into r2;
+    output r1 as PlayerAddedNotification.record;
+    output r2 as football_game_v008.aleo/add_player.future;
 
 finalize add_player:
     input r0 as Player.public;
@@ -1106,30 +1116,30 @@ finalize calculate_outcome:
     add r740 1u64 into r743;
     ternary r741 r742 r739 into r744;
     ternary r741 r740 r743 into r745;
-    ternary true r684.player_id r3.player_id into r746;
-    ternary true r684.team_id r3.team_id into r747;
-    ternary true r684.position r3.position into r748;
-    ternary true r684.attack r3.attack into r749;
-    ternary true r684.defense r3.defense into r750;
-    ternary true r684.speed r3.speed into r751;
-    ternary true r684.power r3.power into r752;
-    ternary true r684.stamina r3.stamina into r753;
-    ternary true r684.technique r3.technique into r754;
-    ternary true r684.goalkeeping r3.goalkeeping into r755;
+    ternary r168 r684.player_id r3.player_id into r746;
+    ternary r168 r684.team_id r3.team_id into r747;
+    ternary r168 r684.position r3.position into r748;
+    ternary r168 r684.attack r3.attack into r749;
+    ternary r168 r684.defense r3.defense into r750;
+    ternary r168 r684.speed r3.speed into r751;
+    ternary r168 r684.power r3.power into r752;
+    ternary r168 r684.stamina r3.stamina into r753;
+    ternary r168 r684.technique r3.technique into r754;
+    ternary r168 r684.goalkeeping r3.goalkeeping into r755;
     cast r746 r747 r748 r749 r750 r751 r752 r753 r754 r755 into r756 as Player;
-    ternary true r685.player_id r4.player_id into r757;
-    ternary true r685.team_id r4.team_id into r758;
-    ternary true r685.position r4.position into r759;
-    ternary true r685.attack r4.attack into r760;
-    ternary true r685.defense r4.defense into r761;
-    ternary true r685.speed r4.speed into r762;
-    ternary true r685.power r4.power into r763;
-    ternary true r685.stamina r4.stamina into r764;
-    ternary true r685.technique r4.technique into r765;
-    ternary true r685.goalkeeping r4.goalkeeping into r766;
+    ternary r168 r685.player_id r4.player_id into r757;
+    ternary r168 r685.team_id r4.team_id into r758;
+    ternary r168 r685.position r4.position into r759;
+    ternary r168 r685.attack r4.attack into r760;
+    ternary r168 r685.defense r4.defense into r761;
+    ternary r168 r685.speed r4.speed into r762;
+    ternary r168 r685.power r4.power into r763;
+    ternary r168 r685.stamina r4.stamina into r764;
+    ternary r168 r685.technique r4.technique into r765;
+    ternary r168 r685.goalkeeping r4.goalkeeping into r766;
     cast r757 r758 r759 r760 r761 r762 r763 r764 r765 r766 into r767 as Player;
-    ternary true r744 r170 into r768;
-    ternary true r745 r169 into r769;
+    ternary r168 r744 r170 into r768;
+    ternary r168 r745 r169 into r769;
     cast r769 r768 into r770 as GameOutcome;
     set r770 into game_outcomes[r0];
 

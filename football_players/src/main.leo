@@ -29,7 +29,7 @@ program football_players_v003.aleo {
 
     record PlayerAddedNotification {
         owner: address,
-        // player: Player,
+        player: Player,
     }
 
     record FormationValidatedNotification {

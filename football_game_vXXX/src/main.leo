@@ -2,7 +2,7 @@ import puzzle_pieces_v016.leo;
 import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
 import football_leaderboard_v003.leo;
 
-program football_game_v008.aleo {
+program football_game_v009.aleo {
     
     transition main (a: bool) {}
 
@@ -14,10 +14,16 @@ program football_game_v008.aleo {
     mapping game_outcomes: field => GameOutcome;
     mapping players: u8 => Player;
 
-    transition add_player (player: Player) {
+    transition add_player (player: Player) -> PlayerAddedNotification {
         // Only to be called by the contract owner
         assert_eq(self.caller, self.signer);
-        return then finalize (player);
+
+        let playerAddedNotification: PlayerAddedNotification = PlayerAddedNotification {
+            owner: self.caller,
+            player
+        };
+        return playerAddedNotification
+        then finalize (player);
     }
     finalize add_player (player: Player) {
         // Player with player_id 0 should have 0 for all stats. Don't allow manually adding this player_id.
@@ -244,6 +250,17 @@ program football_game_v008.aleo {
         loser: address,
         ix: u32,
     }
+
+    record PlayerAddedNotification {
+        owner: address,
+        player: Player,
+    }
+
+    record FormationValidatedNotification {
+        owner: address,
+        formation: [u8; 11],
+    }
+
 
     // New propose game
     transition propose_game (
