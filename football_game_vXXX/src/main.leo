@@ -41,9 +41,6 @@ program football_game_v008.aleo {
         }
     }
 
-    function test (x: address) {
-        let y: field = x as field;
-    }
 
     /////////////////////////////
     // STRUCTS                 //
@@ -54,7 +51,7 @@ program football_game_v008.aleo {
         goals_away: u64,
     }
 
-  struct Player {
+     struct Player {
         player_id: u8,
         team_id: u8,
         position: field, // 0 = Emtpy, 1 = Goalkeep, 2 = Defense, 3 = Mid, 4 = Attack
@@ -290,7 +287,7 @@ program football_game_v008.aleo {
         // random edge case, maybe unnecessary
         // assert_neq(game_multisig, opponent);
 
-        // assert that player 1s answer is either "in weeds" or "behind building"
+        // assert that user 1s answer is either "in weeds" or "behind building"
         
         // hash the answer and nonce
         let challenger_commit: field = BHP256::commit_to_field(challenger_answer, challenger_nonce as scalar);
@@ -620,7 +617,7 @@ program football_game_v008.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        // TODO: assert that player 1s answer is a valid formation
+        // TODO: assert that usder 1s answer is a valid formation
 
         let (
             piece_joint_stake,
@@ -749,6 +746,8 @@ program football_game_v008.aleo {
             ix: 8u32,
         };
 
+
+
         return (challenger_answer_record, joint_piece_state)
         
         then finalize (reveal_answer_notification_record.game_uuid, reveal_answer_notification_record.opponent_answer, challenger_answer_record.answer);
@@ -759,7 +758,8 @@ program football_game_v008.aleo {
         home_formation: [u8; 11],
         away_formation: [u8; 11],
     ) {
-        // TODO: first validate both formations. 
+
+
         // In case of 1 invalid formation: Payout other player.
         // 2 valid formations > ?? (draw is not yet implemented)
         let goals_home: u64 = 0u64;
@@ -768,39 +768,76 @@ program football_game_v008.aleo {
         let home_player: Player = Mapping::get(players, home_formation[10u8]);
         let away_player: Player = Mapping::get(players, away_formation[10u8]);
 
-        for i: u8 in 1u8..11u8 {
+        let valid_formations: bool = true;
 
-            // TODO GET PLAYER FROM MAPPING
-        // for i: u8 in 1u8..11u8 { // put this back lol i gave keeper 200 attack 
-            // See which team attacks 
-            home_player = Mapping::get(players, home_formation[i]);
-            away_player = Mapping::get(players, away_formation[i]);
-            let attacker: Player = home_player.speed > away_player.speed ? home_player : away_player;
-            let defender: Player = home_player.speed > away_player.speed ? away_player : home_player;
-            let goalkeeper: Player = home_player.speed > away_player.speed ? Mapping::get(players, away_formation[0u8]) : Mapping::get(players, home_formation[0u8]);
+        // Validation of formation
+        for formation_i: u8 in 0u8..2u8 {
+            let formation: [u8;11] = home_formation;
+            if formation_i == 1u8 {
+                formation = away_formation;
+            }
 
-            // Attacker shoots, attack stat determines if it's on target.
-            if (attacker.attack > ChaCha::rand_u8()) {
-                // Defender blocks, defense stat determines if it's blocked.
-                if defender.defense < ChaCha::rand_u8() {
-                    // Goalkeeper saves, goalkeeping stat determines if it's saved.
-                    if goalkeeper.goalkeeping < ChaCha::rand_u8() {
-                        // If not saved, record the goal for attacking team.
-                        if (home_player.speed < away_player.speed) {
-                            goals_away += 1u64;
-                        } else {
-                            goals_home += 1u64;
+            let amount_goalkeepers: u8 = 0u8;
+            let same_team: bool = true;
+            let player_one: Player = Mapping::get(players, formation[0u8]);
+
+            for i: u8 in 1u8..11u8 {
+                let player: Player = Mapping::get(players, formation[i]);
+                if (player.position == 1field) {
+                    amount_goalkeepers += 1u8;
+                }
+                if player.team_id != player_one.team_id {
+                    same_team = false;
+                }
+            }
+            if !same_team || amount_goalkeepers != 1u8 {
+                valid_formations = false;
+                if formation_i == 0u8 {
+                    goals_home = 3u64;
+                    goals_away = 0u64;
+                    // Home formation invalid => home team loss
+                } else {
+                    // Away formation invalid => away team loss
+                    goals_home = 0u64;
+                    goals_away = 3u64;
+                }
+                // Todo: implement draw for both invalid outcomes
+            }
+            
+        }
+        
+        if valid_formations {
+            for i: u8 in 1u8..11u8 {
+                // See which team attacks 
+                home_player = Mapping::get(players, home_formation[i]);
+                away_player = Mapping::get(players, away_formation[i]);
+                let attacker: Player = home_player.speed > away_player.speed ? home_player : away_player;
+                let defender: Player = home_player.speed > away_player.speed ? away_player : home_player;
+                let goalkeeper: Player = home_player.speed > away_player.speed ? Mapping::get(players, away_formation[0u8]) : Mapping::get(players, home_formation[0u8]);
+
+                // Attacker shoots, attack stat determines if it's on target.
+                if (attacker.attack > ChaCha::rand_u8()) {
+                    // Defender blocks, defense stat determines if it's blocked.
+                    if defender.defense < ChaCha::rand_u8() {
+                        // Goalkeeper saves, goalkeeping stat determines if it's saved.
+                        if goalkeeper.goalkeeping < ChaCha::rand_u8() {
+                            // If not saved, record the goal for attacking team.
+                            if (home_player.speed < away_player.speed) {
+                                goals_away += 1u64;
+                            } else {
+                                goals_home += 1u64;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // const i: u8 = 1u8;
-        if (home_player.speed < away_player.speed) {
-            goals_away += 1u64;
-        } else {
-            goals_home += 1u64;
+            // const i: u8 = 1u8;
+            if (home_player.speed < away_player.speed) {
+                goals_away += 1u64;
+            } else {
+                goals_home += 1u64;
+            }
         }
 
         let game_outcome: GameOutcome = GameOutcome {
