@@ -3,6 +3,9 @@ import subprocess
 from dotenv import load_dotenv
 import os
 
+# Run this command to execute script (from scripts dir):
+# python3 /home/arjanjohan/git/aleo/serengeti/scripts/import_players.py
+
 # Load the environment variables from .env file
 load_dotenv()
 
@@ -10,7 +13,7 @@ load_dotenv()
 private_key = os.getenv('PRIVATE_KEY_MAIN')
 
 # Load the CSV file
-csv_file_path = '../files/players_final_u8.csv'
+csv_file_path = '../files/players_final_u8_short.csv'
 df = pd.read_csv(csv_file_path)
 
 
@@ -18,7 +21,7 @@ df = pd.read_csv(csv_file_path)
 for index, row in df.iterrows():
     # Constructing the CLI command
     cli_command = (
-        f"snarkos developer execute \"football_game_v005.aleo\" \"add_player\" "
+        f"snarkos developer execute \"football_players_v003.aleo\" \"add_player\" "
         f"\"{{player_id: {row['player_uid']}u8,team_id: {row['team_id']}u8,position: {row['position']}field,"
         f"attack: {row['attack']}u8,defense: {row['defense']}u8,speed: {row['speed']}u8,"
         f"power: {row['power']}u8,stamina: {row['stamina']}u8,technique: {row['technique']}u8,"
