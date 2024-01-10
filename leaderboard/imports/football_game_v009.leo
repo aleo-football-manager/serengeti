@@ -25,6 +25,7 @@ program football_game_v009.aleo {
         assert_eq(game_outcome.goals_home, goals_away);
     }
 
+
     mapping players: u8 => Player;
 
     transition add_player (player: Player) -> PlayerAddedNotification {

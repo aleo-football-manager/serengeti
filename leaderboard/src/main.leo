@@ -1,3 +1,5 @@
+import football_game_v009.leo;
+
 program football_leaderboard_v003.aleo {
     struct User {
         win: u64,

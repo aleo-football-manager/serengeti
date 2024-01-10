@@ -1,8 +1,6 @@
 import puzzle_pieces_v016.aleo;
 import multiparty_pvp_utils_v015_avh.aleo;
-import football_leaderboard_v003.aleo;
-program football_game_v008.aleo;
-
+program football_game_v009.aleo;
 
 
 
@@ -191,13 +189,29 @@ function main:
     input r0 as boolean.private;
 
 
+function validate_outcome:
+    input r0 as field.private;
+    input r1 as u64.private;
+    input r2 as u64.private;
+    async validate_outcome r0 r1 r2 into r3;
+    output r3 as football_game_v009.aleo/validate_outcome.future;
+
+finalize validate_outcome:
+    input r0 as field.public;
+    input r1 as u64.public;
+    input r2 as u64.public;
+    get game_outcomes[r0] into r3;
+    assert.eq r3.goals_home r1;
+    assert.eq r3.goals_home r2;
+
+
 function add_player:
     input r0 as Player.private;
     assert.eq self.caller self.signer;
     cast self.caller r0 into r1 as PlayerAddedNotification.record;
     async add_player r0 into r2;
     output r1 as PlayerAddedNotification.record;
-    output r2 as football_game_v008.aleo/add_player.future;
+    output r2 as football_game_v009.aleo/add_player.future;
 
 finalize add_player:
     input r0 as Player.public;
@@ -342,7 +356,7 @@ function accept_game:
     output r11 as WaitingRevealNotification.record;
     output r12 as RevealAnswerNotification.record;
     output r13 as Game.record;
-    output r14 as football_game_v008.aleo/accept_game.future;
+    output r14 as football_game_v009.aleo/accept_game.future;
 
 finalize accept_game:
     input r0 as u32.public;
@@ -367,7 +381,7 @@ function calculate_outcome:
     async calculate_outcome r1.game_uuid r1.opponent_answer r3.answer into r7;
     output r3 as multiparty_pvp_utils_v015_avh.aleo/Answer.record;
     output r2 as puzzle_pieces_v016.aleo/JointPieceState.record;
-    output r7 as football_game_v008.aleo/calculate_outcome.future;
+    output r7 as football_game_v009.aleo/calculate_outcome.future;
 
 finalize calculate_outcome:
     input r0 as field.public;
@@ -1167,7 +1181,7 @@ function reveal_answer_game:
     output r12 as puzzle_pieces_v016.aleo/AuditJointPieceWinner.record;
     output r13 as GameFinishReqNotification.record;
     output r14 as GameFinishReqNotification.record;
-    output r15 as football_game_v008.aleo/reveal_answer_game.future;
+    output r15 as football_game_v009.aleo/reveal_answer_game.future;
 
 finalize reveal_answer_game:
     input r0 as field.public;
@@ -1193,26 +1207,23 @@ function finish_game:
     cast r0.owner r0.uuid r0.challenger_commit r0.opponent_answer r0.total_pot r0.challenger_address r0.opponent_address r0.game_multisig 3field 0u32 into r12 as Game.record;
     cast r0.challenger_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r8 10u32 into r13 as GameFinishedNotification.record;
     cast r0.opponent_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r8 10u32 into r14 as GameFinishedNotification.record;
-    call football_leaderboard_v003.aleo/update_leaderboard r0.challenger_address r0.opponent_address r4.goals_home r4.goals_home into r15;
-    async finish_game r15 r0.uuid r0.challenger_address r0.opponent_address r4 into r16;
+    async finish_game r0.uuid r0.challenger_address r0.opponent_address r4 into r15;
     output r9 as puzzle_pieces_v016.aleo/Piece.record;
     output r10 as puzzle_pieces_v016.aleo/AuditTransferToWinner.record;
     output r11 as puzzle_pieces_v016.aleo/AuditPieceOwner.record;
     output r12 as Game.record;
     output r13 as GameFinishedNotification.record;
     output r14 as GameFinishedNotification.record;
-    output r16 as football_game_v008.aleo/finish_game.future;
+    output r15 as football_game_v009.aleo/finish_game.future;
 
 finalize finish_game:
-    input r0 as football_leaderboard_v003.aleo/update_leaderboard.future;
-    input r1 as field.public;
+    input r0 as field.public;
+    input r1 as address.public;
     input r2 as address.public;
-    input r3 as address.public;
-    input r4 as GameOutcome.public;
-    await r0;
-    get game_outcomes[r1] into r5;
-    assert.eq r4.goals_home r5.goals_home;
-    assert.eq r4.goals_away r5.goals_away;
+    input r3 as GameOutcome.public;
+    get game_outcomes[r0] into r4;
+    assert.eq r3.goals_home r4.goals_home;
+    assert.eq r3.goals_away r4.goals_away;
 
 
 function finish_game_by_timeout:
@@ -1232,7 +1243,7 @@ function finish_game_by_timeout:
     output r4 as Game.record;
     output r5 as GameFinishedNotification.record;
     output r6 as GameFinishedNotification.record;
-    output r9 as football_game_v008.aleo/finish_game_by_timeout.future;
+    output r9 as football_game_v009.aleo/finish_game_by_timeout.future;
 
 finalize finish_game_by_timeout:
     input r0 as u32.public;
