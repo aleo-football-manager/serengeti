@@ -47,7 +47,7 @@ program football_players_v003.aleo {
         
         let playerAddedNotification: PlayerAddedNotification = PlayerAddedNotification {
             owner: self.caller,
-            // player
+            player
         };
         
         return playerAddedNotification

@@ -21,7 +21,7 @@ df = pd.read_csv(csv_file_path)
 for index, row in df.iterrows():
     # Constructing the CLI command
     cli_command = (
-        f"snarkos developer execute \"football_game_v007.aleo\" \"add_player\" "
+        f"snarkos developer execute \"football_game_v010.aleo\" \"add_player\" "
         f"\"{{player_id: {row['player_uid']}u8,team_id: {row['team_id']}u8,position: {row['position']}field,"
         f"attack: {row['attack']}u8,defense: {row['defense']}u8,speed: {row['speed']}u8,"
         f"power: {row['power']}u8,stamina: {row['stamina']}u8,technique: {row['technique']}u8,"
@@ -29,6 +29,8 @@ for index, row in df.iterrows():
         f"--query \"https://api.explorer.aleo.org/v1\" --broadcast \"https://api.explorer.aleo.org/v1/testnet3/transaction/broadcast\" "
         f"--priority-fee 1000000"
     )
+
+    # print(cli_command)
 
     # Execute the CLI command
     subprocess.run(cli_command, shell=True)

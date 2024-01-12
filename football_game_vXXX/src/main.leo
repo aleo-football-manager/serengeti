@@ -2,7 +2,7 @@ import puzzle_pieces_v016.leo;
 import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
 import football_leaderboard_v003.leo;
 
-program football_game_v009.aleo {
+program football_game_v010.aleo {
     
     transition main (a: bool) {}
 
@@ -201,7 +201,8 @@ program football_game_v009.aleo {
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
-        result_mapping_uuid: field,
+        opponent_answer: [u8; 11],
+        game_uuid: field,
         ix: u32,
     }
 
@@ -725,14 +726,14 @@ program football_game_v009.aleo {
     // called by challenger to calculate and store outcome
     transition calculate_outcome
     (
-        challenger_claim_signature: puzzle_pieces_v016.leo/ClaimSignature.record,
         reveal_answer_notification_record: RevealAnswerNotification,
         joint_piece_state: puzzle_pieces_v016.leo/JointPieceState.record,
         challenger_answer_record: multiparty_pvp_utils_v015_avh.leo/Answer.record,
     ) 
     -> (
-        multiparty_pvp_utils_v015_avh.leo/Answer.record,
         puzzle_pieces_v016.leo/JointPieceState.record,
+        multiparty_pvp_utils_v015_avh.leo/Answer.record,
+        CalculatedOutcomeNotification,
         )
     {
 
@@ -743,12 +744,6 @@ program football_game_v009.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        // determine winner! If opponent correctly picked where the challenger hid alex, the opponent wins otherwise the challenger wins
-        let challenger_sig: signature = challenger_claim_signature.sig;
-
-        // retrieve revealedanswer record
-
-        let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = multiparty_pvp_utils_v015_avh.leo/reveal_answer(challenger_answer_record, challenger_sig);
 
         // sent to challenger on accept_game
         let calculate_outcome_notification_record: CalculatedOutcomeNotification = CalculatedOutcomeNotification {
@@ -759,13 +754,14 @@ program football_game_v009.aleo {
             total_pot: reveal_answer_notification_record.total_pot,
             challenger_address: reveal_answer_notification_record.challenger_address,
             opponent_address: reveal_answer_notification_record.opponent_address,
-            result_mapping_uuid: reveal_answer_notification_record.game_uuid,
+            opponent_answer: reveal_answer_notification_record.opponent_answer,
+            game_uuid: reveal_answer_notification_record.game_uuid,
             ix: 8u32,
         };
 
 
 
-        return (challenger_answer_record, joint_piece_state)
+        return (joint_piece_state, challenger_answer_record, calculate_outcome_notification_record)
         
         then finalize (reveal_answer_notification_record.game_uuid, reveal_answer_notification_record.opponent_answer, challenger_answer_record.answer);
     }
@@ -867,7 +863,7 @@ program football_game_v009.aleo {
 
     transition reveal_answer_game (
         challenger_claim_signature: puzzle_pieces_v016.leo/ClaimSignature.record,
-        reveal_answer_notification_record: RevealAnswerNotification,
+        reveal_answer_notification_record: CalculatedOutcomeNotification,
         joint_piece_state: puzzle_pieces_v016.leo/JointPieceState.record,
         challenger_answer_record: multiparty_pvp_utils_v015_avh.leo/Answer.record,
         game_outcome: GameOutcome,
