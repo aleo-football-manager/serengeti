@@ -14,15 +14,9 @@ program football_game_v010.aleo {
     mapping game_outcomes: field => GameOutcome;
     mapping players: u8 => Player;
 
-    transition add_player (player: Player) -> PlayerAddedNotification {
+    transition add_player (player: Player) {
         // Only to be called by the contract owner
         assert_eq(self.caller, self.signer);
-
-        let playerAddedNotification: PlayerAddedNotification = PlayerAddedNotification {
-            owner: self.caller,
-            player
-        };
-        return playerAddedNotification
         then finalize (player);
     }
     finalize add_player (player: Player) {
@@ -251,17 +245,6 @@ program football_game_v010.aleo {
         loser: address,
         ix: u32,
     }
-
-    record PlayerAddedNotification {
-        owner: address,
-        player: Player,
-    }
-
-    record FormationValidatedNotification {
-        owner: address,
-        formation: [u8; 11],
-    }
-
 
     // New propose game
     transition propose_game (
@@ -783,41 +766,41 @@ program football_game_v010.aleo {
 
         let valid_formations: bool = true;
 
-        // Validation of formation
-        for formation_i: u8 in 0u8..2u8 {
-            let formation: [u8;11] = home_formation;
-            if formation_i == 1u8 {
-                formation = away_formation;
-            }
+        // // Validation of formation
+        // for formation_i: u8 in 0u8..2u8 {
+        //     let formation: [u8;11] = home_formation;
+        //     if formation_i == 1u8 {
+        //         formation = away_formation;
+        //     }
 
-            let amount_goalkeepers: u8 = 0u8;
-            let same_team: bool = true;
-            let player_one: Player = Mapping::get(players, formation[0u8]);
+        //     let amount_goalkeepers: u8 = 0u8;
+        //     let same_team: bool = true;
+        //     let player_one: Player = Mapping::get(players, formation[0u8]);
 
-            for i: u8 in 1u8..11u8 {
-                let player: Player = Mapping::get(players, formation[i]);
-                if (player.position == 1field) {
-                    amount_goalkeepers += 1u8;
-                }
-                if player.team_id != player_one.team_id {
-                    same_team = false;
-                }
-            }
-            if !same_team || amount_goalkeepers != 1u8 {
-                valid_formations = false;
-                if formation_i == 0u8 {
-                    goals_home = 3u64;
-                    goals_away = 0u64;
-                    // Home formation invalid => home team loss
-                } else {
-                    // Away formation invalid => away team loss
-                    goals_home = 0u64;
-                    goals_away = 3u64;
-                }
-                // Todo: implement draw for both invalid outcomes
-            }
+        //     for i: u8 in 1u8..11u8 {
+        //         let player: Player = Mapping::get(players, formation[i]);
+        //         if (player.position == 1field) {
+        //             amount_goalkeepers += 1u8;
+        //         }
+        //         if player.team_id != player_one.team_id {
+        //             same_team = false;
+        //         }
+        //     }
+        //     if !same_team || amount_goalkeepers != 1u8 {
+        //         valid_formations = false;
+        //         if formation_i == 0u8 {
+        //             goals_home = 3u64;
+        //             goals_away = 0u64;
+        //             // Home formation invalid => home team loss
+        //         } else {
+        //             // Away formation invalid => away team loss
+        //             goals_home = 0u64;
+        //             goals_away = 3u64;
+        //         }
+        //         // Todo: implement draw for both invalid outcomes
+        //     }
             
-        }
+        // }
         
         if valid_formations {
             for i: u8 in 1u8..11u8 {
