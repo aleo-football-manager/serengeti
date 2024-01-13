@@ -2,7 +2,7 @@ import puzzle_pieces_v016.leo;
 import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
 import football_leaderboard_v003.leo;
 
-program football_game_v010.aleo {
+program football_game_v011.aleo {
     
     transition main (a: bool) {}
 
@@ -17,7 +17,7 @@ program football_game_v010.aleo {
     transition add_player (player: Player) {
         // Only to be called by the contract owner
         assert_eq(self.caller, self.signer);
-        then finalize (player);
+        return then finalize (player);
     }
     finalize add_player (player: Player) {
         // Player with player_id 0 should have 0 for all stats. Don't allow manually adding this player_id.
@@ -196,7 +196,7 @@ program football_game_v010.aleo {
         challenger_address: address,
         opponent_address: address,
         opponent_answer: [u8; 11],
-        game_uuid: field,
+        uuid: field,
         ix: u32,
     }
 
@@ -212,7 +212,7 @@ program football_game_v010.aleo {
         challenger_address: address,
         opponent_address: address,
         opponent_answer: [u8; 11],
-        game_uuid: field,
+        uuid: field,
         ix: u32,
     }
 
@@ -660,7 +660,7 @@ program football_game_v010.aleo {
             challenger_address: game_record.challenger_address,
             opponent_address: game_record.opponent_address,
             opponent_answer: opponent_answer,
-            game_uuid: game_record.uuid,
+            uuid: game_record.uuid,
             ix: 8u32,
         };
 
@@ -738,7 +738,7 @@ program football_game_v010.aleo {
             challenger_address: reveal_answer_notification_record.challenger_address,
             opponent_address: reveal_answer_notification_record.opponent_address,
             opponent_answer: reveal_answer_notification_record.opponent_answer,
-            game_uuid: reveal_answer_notification_record.game_uuid,
+            uuid: reveal_answer_notification_record.uuid,
             ix: 8u32,
         };
 
@@ -746,7 +746,7 @@ program football_game_v010.aleo {
 
         return (joint_piece_state, challenger_answer_record, calculate_outcome_notification_record)
         
-        then finalize (reveal_answer_notification_record.game_uuid, reveal_answer_notification_record.opponent_answer, challenger_answer_record.answer);
+        then finalize (reveal_answer_notification_record.uuid, reveal_answer_notification_record.opponent_answer, challenger_answer_record.answer);
     }
 
     finalize calculate_outcome (
@@ -903,7 +903,7 @@ program football_game_v010.aleo {
         };
     
         return (revealed_answer_record, audit_revealed_answer_record, joint_piece_winner, audit_joint_piece_winner, game_finish_req_notification_record_opponent, game_finish_req_notification_record_challenger)
-        then finalize (reveal_answer_notification_record.game_uuid, game_outcome);
+        then finalize (reveal_answer_notification_record.uuid, game_outcome);
     }
 
     finalize reveal_answer_game (uuid: field, input_outcome: GameOutcome) {
