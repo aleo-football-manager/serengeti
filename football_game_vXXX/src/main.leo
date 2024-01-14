@@ -2,9 +2,7 @@ import puzzle_pieces_v016.leo;
 import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
 import football_leaderboard_v003.leo;
 
-program football_game_v011.aleo {
-    
-    transition main (a: bool) {}
+program football_game_v012.aleo {
 
     /////////////////////////////
     // MAPPING                 //
@@ -47,6 +45,10 @@ program football_game_v011.aleo {
     /////////////////////////////
 
     struct GameOutcome {
+        address_home: address,
+        address_away: address
+        team_id_home: u8,
+        team_id_away: u8,
         goals_home: u64,
         goals_away: u64,
     }
@@ -228,6 +230,8 @@ program football_game_v011.aleo {
         opponent_address: address,
         challenger_answer: [u8; 11],
         opponent_answer: [u8; 11],
+        winner: address,
+        loser: address,
         ix: u32,
     }
 
@@ -739,18 +743,26 @@ program football_game_v011.aleo {
             opponent_address: reveal_answer_notification_record.opponent_address,
             opponent_answer: reveal_answer_notification_record.opponent_answer,
             uuid: reveal_answer_notification_record.uuid,
-            ix: 8u32,
+            ix: 11u32,
         };
 
-
+        let challenger_answer: [u8;11] = challenger_answer_record.answer;
 
         return (joint_piece_state, challenger_answer_record, calculate_outcome_notification_record)
         
-        then finalize (reveal_answer_notification_record.uuid, reveal_answer_notification_record.opponent_answer, challenger_answer_record.answer);
+        then finalize (
+            reveal_answer_notification_record.uuid, 
+            reveal_answer_notification_record.challenger_address,
+            reveal_answer_notification_record.opponent_address,
+            challenger_answer,
+            reveal_answer_notification_record.opponent_answer, 
+            );
     }
 
     finalize calculate_outcome (
         uuid: field,
+        address_home: address,
+        address_away: address,
         home_formation: [u8; 11],
         away_formation: [u8; 11],
     ) {
@@ -836,7 +848,14 @@ program football_game_v011.aleo {
             }
         }
 
+        let team_id_home: u8 = home_player.team_id;
+        let team_id_away: u8 = home_player.team_id;
+
         let game_outcome: GameOutcome = GameOutcome {
+            address_home,
+            address_away,
+            team_id_home,
+            team_id_away,
             goals_home,
             goals_away,
         };
@@ -886,6 +905,8 @@ program football_game_v011.aleo {
             opponent_address: challenger_answer_record.opponent_address,
             challenger_answer: challenger_answer_record.answer,
             opponent_answer: reveal_answer_notification_record.opponent_answer,
+            winner: winner_address,
+            loser: loser_address,
             ix: 9u32,
         };
 
@@ -899,6 +920,8 @@ program football_game_v011.aleo {
             opponent_address: challenger_answer_record.opponent_address,
             challenger_answer: challenger_answer_record.answer,
             opponent_answer: reveal_answer_notification_record.opponent_answer,
+            winner: winner_address,
+            loser: loser_address,
             ix: 9u32,
         };
     
@@ -920,7 +943,7 @@ program football_game_v011.aleo {
         joint_piece_winner: puzzle_pieces_v016.leo/JointPieceWinner.record,
         piece_joint_stake: puzzle_pieces_v016.leo/PieceJointStake.record,
         joint_piece_time_claim: puzzle_pieces_v016.leo/JointPieceTimeClaim.record,
-        game_outcome: GameOutcome,
+        game_outcome: GameOutcome, // TODO Or use field for win lose draw? 
     ) -> (
         puzzle_pieces_v016.leo/Piece.record,
         puzzle_pieces_v016.leo/AuditTransferToWinner.record,
