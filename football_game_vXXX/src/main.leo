@@ -714,11 +714,9 @@ program football_game_v012.aleo {
     transition calculate_outcome
     (
         reveal_answer_notification_record: RevealAnswerNotification,
-        joint_piece_state: puzzle_pieces_v016.leo/JointPieceState.record,
         challenger_answer_record: multiparty_pvp_utils_v015_avh.leo/Answer.record,
     ) 
     -> (
-        puzzle_pieces_v016.leo/JointPieceState.record,
         multiparty_pvp_utils_v015_avh.leo/Answer.record,
         CalculatedOutcomeNotification,
         )
@@ -726,7 +724,7 @@ program football_game_v012.aleo {
 
         // assert that the correct state updater address is the challenger and the challenger
         // is invoking this
-        assert_eq(joint_piece_state.state_updater_address, self.signer);
+        assert_eq(reveal_answer_notification_record.challenger_address, self.signer);
 
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
@@ -734,7 +732,7 @@ program football_game_v012.aleo {
 
         // sent to challenger on accept_game
         let calculate_outcome_notification_record: CalculatedOutcomeNotification = CalculatedOutcomeNotification {
-            owner: reveal_answer_notification_record.challenger_address, //TODO is this correct?
+            owner: reveal_answer_notification_record.challenger_address,
             game_multisig: reveal_answer_notification_record.game_multisig,
             game_state: 4field,
             your_turn: true,
@@ -748,7 +746,7 @@ program football_game_v012.aleo {
 
         let challenger_answer: [u8;11] = challenger_answer_record.answer;
 
-        return (joint_piece_state, challenger_answer_record, calculate_outcome_notification_record)
+        return (challenger_answer_record, calculate_outcome_notification_record)
         
         then finalize (
             reveal_answer_notification_record.uuid, 
@@ -865,7 +863,7 @@ program football_game_v012.aleo {
 
     transition reveal_answer_game (
         challenger_claim_signature: puzzle_pieces_v016.leo/ClaimSignature.record,
-        reveal_answer_notification_record: CalculatedOutcomeNotification,
+        calculated_outcome_notification_record: CalculatedOutcomeNotification,
         joint_piece_state: puzzle_pieces_v016.leo/JointPieceState.record,
         challenger_answer_record: multiparty_pvp_utils_v015_avh.leo/Answer.record,
         game_outcome: GameOutcome,
@@ -885,7 +883,7 @@ program football_game_v012.aleo {
         assert_eq(self.caller, self.signer);
 
         // determine winner! If opponent correctly picked where the challenger hid alex, the opponent wins otherwise the challenger wins
-        let winner_address: address = reveal_answer_notification_record.opponent_answer == challenger_answer_record.answer ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
+        let winner_address: address = calculated_outcome_notification_record.opponent_answer == challenger_answer_record.answer ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
         let loser_address: address = winner_address == challenger_answer_record.challenger_address ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
         let challenger_sig: signature = challenger_claim_signature.sig;
 
@@ -904,7 +902,7 @@ program football_game_v012.aleo {
             challenger_address: challenger_answer_record.challenger_address,
             opponent_address: challenger_answer_record.opponent_address,
             challenger_answer: challenger_answer_record.answer,
-            opponent_answer: reveal_answer_notification_record.opponent_answer,
+            opponent_answer: calculated_outcome_notification_record.opponent_answer,
             winner: winner_address,
             loser: loser_address,
             ix: 9u32,
@@ -919,14 +917,14 @@ program football_game_v012.aleo {
             challenger_address: challenger_answer_record.challenger_address,
             opponent_address: challenger_answer_record.opponent_address,
             challenger_answer: challenger_answer_record.answer,
-            opponent_answer: reveal_answer_notification_record.opponent_answer,
+            opponent_answer: calculated_outcome_notification_record.opponent_answer,
             winner: winner_address,
             loser: loser_address,
             ix: 9u32,
         };
     
         return (revealed_answer_record, audit_revealed_answer_record, joint_piece_winner, audit_joint_piece_winner, game_finish_req_notification_record_opponent, game_finish_req_notification_record_challenger)
-        then finalize (reveal_answer_notification_record.uuid, game_outcome);
+        then finalize (calculated_outcome_notification_record.uuid, game_outcome);
     }
 
     finalize reveal_answer_game (uuid: field, input_outcome: GameOutcome) {
