@@ -1,6 +1,8 @@
-
 <img src="https://github.com/aleo-football-manager/serengeti/blob/658cf50f430938d9efff826cffa2a16816290d7c/files/cover1.png" alt="cover" />
-
+<h4 align="center">
+  <a href="https://superleolig.vercel.app/">Deployed app</a> |
+  <a href="https://github.com/aleo-football-manager/game-frontend">Front-end repo</a>
+</h4>
 
 # Super Leo Lig
 Super Leo Lig is a game based on the [Where's Alex game by that is created by Puzzle](https://wheresalex.puzzle.online/). Super Leo Lig uses the same flow as the Where's Alex game, but changed the logic to turn it into a simple football management game.
