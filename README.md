@@ -26,7 +26,7 @@ Challenge another person on Aleo with a wager. Select a team and come up with th
 The FE for the game utilizes key multisig features using the Puzzle Wallet and Puzzle SDK described below. <br /> <br />
 The game is split into 3 Leo Programs described below:
 1. Puzzle Pieces token program (with _n_ of _n_ programmable multisig functions)
-2. Multiparty PVP utils program (Modified to accept array of 11 u8's instead of a single field var)
+2. Multiparty PVP utils program (Modified to accept array of 11 u8's for the formation, instead of a single field var)
 3. Football Game program
 
 <br /> 
@@ -52,7 +52,8 @@ If you're interested in building your own multiparty game on Aleo, fork this rep
 
 3. Finishing a game (challenger)
 - Reveal your answer
-- Finish the geam and payout the wagers to you if the opponent guessed wrong or the opponent if they guessed right!
+- Calculate the outcome, based on the two formations and some randomness.
+- Finish the game and payout the wager to the winner.
 
 NOTE: Different function executions require different keys (player 1, player 2, multisig keys). For testing purposes, you can run the below to switch execution keys.
 
