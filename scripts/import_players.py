@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 
 # Run this command to execute script (from scripts dir):
-# python3 /home/arjanjohan/git/aleo/serengeti/scripts/import_players.py
+# python3 ../scripts/import_players.py
 
 # Load the environment variables from .env file
 load_dotenv()
@@ -21,7 +21,7 @@ df = pd.read_csv(csv_file_path)
 for index, row in df.iterrows():
     # Constructing the CLI command
     cli_command = (
-        f"snarkos developer execute \"football_random_v011.aleo\" \"add_player\" "
+        f"snarkos developer execute \"football_game_v012.aleo\" \"add_player\" "
         f"\"{{player_id: {row['player_uid']}u8,team_id: {row['team_id']}u8,position: {row['position']}field,"
         f"attack: {row['attack']}u8,defense: {row['defense']}u8,speed: {row['speed']}u8,"
         f"power: {row['power']}u8,stamina: {row['stamina']}u8,technique: {row['technique']}u8,"

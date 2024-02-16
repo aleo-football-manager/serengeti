@@ -1,7 +1,10 @@
 import puzzle_pieces_v016.leo;
 import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
 
-program football_game_v013.aleo {
+program football_game_v012.aleo {
+    // V012 changes
+    // Commented out validate_formation. Need to test part this in seperate contract.
+    // Commented out renege functions to save on deploy fee. 
 
     /////////////////////////////
     // MAPPING                 //
@@ -13,7 +16,7 @@ program football_game_v013.aleo {
 
     transition add_player (player: Player) {
         // Only to be called by the contract owner
-        assert_eq(self.caller, self.signer); // this doesnt work lol? 
+        assert_eq(self.caller, self.signer);
         return then finalize (player);
     }
     finalize add_player (player: Player) {
@@ -407,54 +410,54 @@ program football_game_v013.aleo {
         
     }
 
-    // challenger calls this function with Multisig key and signature as input
-    // that was submitted when proposing game and that exists on claim record
-    transition challenger_renege_stake
-    (
-        waiting_accept_game_notification: WaitingAcceptanceNotification,
-        piece_stake_challenger: puzzle_pieces_v016.leo/PieceStake.record,
-        piece_claim_challenger: puzzle_pieces_v016.leo/PieceClaim.record,
-        challenger_sig: signature,
-    ) -> (
-        puzzle_pieces_v016.leo/Piece.record,
-        puzzle_pieces_v016.leo/AuditStakeOut.record,
-        StakeRenegedNotification,
-        StakeRenegedNotification,
-        )
-    {
-        // assert contracts can't call this
-        assert_eq(self.caller, self.signer);
+    // // challenger calls this function with Multisig key and signature as input
+    // // that was submitted when proposing game and that exists on claim record
+    // transition challenger_renege_stake
+    // (
+    //     waiting_accept_game_notification: WaitingAcceptanceNotification,
+    //     piece_stake_challenger: puzzle_pieces_v016.leo/PieceStake.record,
+    //     piece_claim_challenger: puzzle_pieces_v016.leo/PieceClaim.record,
+    //     challenger_sig: signature,
+    // ) -> (
+    //     puzzle_pieces_v016.leo/Piece.record,
+    //     puzzle_pieces_v016.leo/AuditStakeOut.record,
+    //     StakeRenegedNotification,
+    //     StakeRenegedNotification,
+    //     )
+    // {
+    //     // assert contracts can't call this
+    //     assert_eq(self.caller, self.signer);
 
-        let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = puzzle_pieces_v016.leo/stake_transfer_out(piece_stake_challenger, piece_claim_challenger, challenger_sig);
+    //     let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = puzzle_pieces_v016.leo/stake_transfer_out(piece_stake_challenger, piece_claim_challenger, challenger_sig);
 
-        let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-            owner: waiting_accept_game_notification.challenger_address, //opponent
-            game_multisig: waiting_accept_game_notification.game_multisig,
-            game_state: 0field,
-            your_turn: false,
-            total_pot: waiting_accept_game_notification.total_pot,
-            challenger_address: waiting_accept_game_notification.challenger_address,
-            opponent_address: waiting_accept_game_notification.opponent_address,
-            renege_address: waiting_accept_game_notification.challenger_address,
-            ix: 4u32,
-        };
+    //     let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
+    //         owner: waiting_accept_game_notification.challenger_address, //opponent
+    //         game_multisig: waiting_accept_game_notification.game_multisig,
+    //         game_state: 0field,
+    //         your_turn: false,
+    //         total_pot: waiting_accept_game_notification.total_pot,
+    //         challenger_address: waiting_accept_game_notification.challenger_address,
+    //         opponent_address: waiting_accept_game_notification.opponent_address,
+    //         renege_address: waiting_accept_game_notification.challenger_address,
+    //         ix: 4u32,
+    //     };
 
 
-        let notify_opponent_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-            owner: waiting_accept_game_notification.opponent_address, //opponent
-            game_multisig: waiting_accept_game_notification.game_multisig,
-            game_state: 0field,
-            your_turn: false,
-            total_pot: waiting_accept_game_notification.total_pot,
-            challenger_address: waiting_accept_game_notification.challenger_address,
-            opponent_address: waiting_accept_game_notification.opponent_address,
-            renege_address: waiting_accept_game_notification.challenger_address,
-            ix: 4u32,
-        };
+    //     let notify_opponent_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
+    //         owner: waiting_accept_game_notification.opponent_address, //opponent
+    //         game_multisig: waiting_accept_game_notification.game_multisig,
+    //         game_state: 0field,
+    //         your_turn: false,
+    //         total_pot: waiting_accept_game_notification.total_pot,
+    //         challenger_address: waiting_accept_game_notification.challenger_address,
+    //         opponent_address: waiting_accept_game_notification.opponent_address,
+    //         renege_address: waiting_accept_game_notification.challenger_address,
+    //         ix: 4u32,
+    //     };
 
-        return (piece_record, audit_stake_out_record, notify_challenger_stake_reneged, notify_opponent_stake_reneged);
+    //     return (piece_record, audit_stake_out_record, notify_challenger_stake_reneged, notify_opponent_stake_reneged);
 
-    }
+    // }
 
     transition submit_wager (
         opponent_wager_record: puzzle_pieces_v016.leo/Piece.record,
@@ -547,54 +550,54 @@ program football_game_v013.aleo {
         );
     }
 
-    // opponent calls this function with Multisig key and signature as input
-    // that was submitted when submitting wager that exists on claim record
-    transition opponent_renege_stake
-    (
-        waiting_accept_game_notification: WaitingAcceptanceNotification,
-        piece_stake_opponent: puzzle_pieces_v016.leo/PieceStake.record,
-        piece_claim_opponent: puzzle_pieces_v016.leo/PieceClaim.record,
-        opponent_sig: signature,
-    ) -> (
-        puzzle_pieces_v016.leo/Piece.record,
-        puzzle_pieces_v016.leo/AuditStakeOut.record,
-        StakeRenegedNotification,
-        StakeRenegedNotification,
-        )
-    {
-        // assert contracts can't call this
-        assert_eq(self.caller, self.signer);
+    // // opponent calls this function with Multisig key and signature as input
+    // // that was submitted when submitting wager that exists on claim record
+    // transition opponent_renege_stake
+    // (
+    //     waiting_accept_game_notification: WaitingAcceptanceNotification,
+    //     piece_stake_opponent: puzzle_pieces_v016.leo/PieceStake.record,
+    //     piece_claim_opponent: puzzle_pieces_v016.leo/PieceClaim.record,
+    //     opponent_sig: signature,
+    // ) -> (
+    //     puzzle_pieces_v016.leo/Piece.record,
+    //     puzzle_pieces_v016.leo/AuditStakeOut.record,
+    //     StakeRenegedNotification,
+    //     StakeRenegedNotification,
+    //     )
+    // {
+    //     // assert contracts can't call this
+    //     assert_eq(self.caller, self.signer);
 
-        let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = puzzle_pieces_v016.leo/stake_transfer_out(piece_stake_opponent, piece_claim_opponent, opponent_sig);
+    //     let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = puzzle_pieces_v016.leo/stake_transfer_out(piece_stake_opponent, piece_claim_opponent, opponent_sig);
 
-        let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-            owner: waiting_accept_game_notification.challenger_address, //opponent
-            game_multisig: waiting_accept_game_notification.game_multisig,
-            game_state: 0field,
-            your_turn: false,
-            total_pot: waiting_accept_game_notification.total_pot,
-            challenger_address: waiting_accept_game_notification.challenger_address,
-            opponent_address: waiting_accept_game_notification.opponent_address,
-            renege_address: waiting_accept_game_notification.opponent_address,
-            ix: 4u32,
-        };
+    //     let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
+    //         owner: waiting_accept_game_notification.challenger_address, //opponent
+    //         game_multisig: waiting_accept_game_notification.game_multisig,
+    //         game_state: 0field,
+    //         your_turn: false,
+    //         total_pot: waiting_accept_game_notification.total_pot,
+    //         challenger_address: waiting_accept_game_notification.challenger_address,
+    //         opponent_address: waiting_accept_game_notification.opponent_address,
+    //         renege_address: waiting_accept_game_notification.opponent_address,
+    //         ix: 4u32,
+    //     };
 
 
-        let notify_opponent_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-            owner: waiting_accept_game_notification.opponent_address, //opponent
-            game_multisig: waiting_accept_game_notification.game_multisig,
-            game_state: 0field,
-            your_turn: false,
-            total_pot: waiting_accept_game_notification.total_pot,
-            challenger_address: waiting_accept_game_notification.challenger_address,
-            opponent_address: waiting_accept_game_notification.opponent_address,
-            renege_address: waiting_accept_game_notification.opponent_address,
-            ix: 4u32,
-        };
+    //     let notify_opponent_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
+    //         owner: waiting_accept_game_notification.opponent_address, //opponent
+    //         game_multisig: waiting_accept_game_notification.game_multisig,
+    //         game_state: 0field,
+    //         your_turn: false,
+    //         total_pot: waiting_accept_game_notification.total_pot,
+    //         challenger_address: waiting_accept_game_notification.challenger_address,
+    //         opponent_address: waiting_accept_game_notification.opponent_address,
+    //         renege_address: waiting_accept_game_notification.opponent_address,
+    //         ix: 4u32,
+    //     };
 
-        return (piece_record, audit_stake_out_record, notify_challenger_stake_reneged, notify_opponent_stake_reneged);
+    //     return (piece_record, audit_stake_out_record, notify_challenger_stake_reneged, notify_opponent_stake_reneged);
 
-    }
+    // }
 
     // called by ms key after wager is confirmed on network
     transition accept_game
@@ -670,8 +673,8 @@ program football_game_v013.aleo {
         };
 
         let updated_game_record: Game = Game {
-            owner: game_record.owner,
             uuid: game_record.uuid,
+            owner: game_record.owner,
             challenger_commit: game_record.challenger_commit,
             opponent_answer: opponent_answer,
             total_pot: game_record.total_pot,
@@ -772,10 +775,10 @@ program football_game_v013.aleo {
         let goals_home: u64 = 0u64;
         let goals_away: u64 = 0u64;
 
-        let home_player: Player = Mapping::get(players, home_formation[10u8]);
-        let away_player: Player = Mapping::get(players, away_formation[10u8]);
+        let home_player: Player = Mapping::get(players, home_formation[0u8]);
+        let away_player: Player = Mapping::get(players, away_formation[0u8]);
 
-        let valid_formations: bool = true;
+        // let valid_formations: bool = true;
 
         // // Validation of formation
         // for formation_i: u8 in 0u8..2u8 {
@@ -810,41 +813,42 @@ program football_game_v013.aleo {
         //         }
         //         // Todo: implement draw for both invalid outcomes
         //     }
+            
         // }
         
-        if valid_formations {
-            for i: u8 in 1u8..11u8 {
-                // See which team attacks 
-                home_player = Mapping::get(players, home_formation[i]);
-                away_player = Mapping::get(players, away_formation[i]);
-                let attacker: Player = home_player.speed > away_player.speed ? home_player : away_player;
-                let defender: Player = home_player.speed > away_player.speed ? away_player : home_player;
-                let goalkeeper: Player = home_player.speed > away_player.speed ? Mapping::get(players, away_formation[0u8]) : Mapping::get(players, home_formation[0u8]);
+        // if valid_formations {
+        for i: u8 in 1u8..11u8 {
+            // See which team attacks 
+            home_player = Mapping::get(players, home_formation[i]);
+            away_player = Mapping::get(players, away_formation[i]);
+            let attacker: Player = home_player.speed > away_player.speed ? home_player : away_player;
+            let defender: Player = home_player.speed > away_player.speed ? away_player : home_player;
+            let goalkeeper: Player = home_player.speed > away_player.speed ? Mapping::get(players, away_formation[0u8]) : Mapping::get(players, home_formation[0u8]);
 
-                // Attacker shoots, attack stat determines if it's on target.
-                if (attacker.attack > ChaCha::rand_u8()) {
-                    // Defender blocks, defense stat determines if it's blocked.
-                    if defender.defense < ChaCha::rand_u8() {
-                        // Goalkeeper saves, goalkeeping stat determines if it's saved.
-                        if goalkeeper.goalkeeping < ChaCha::rand_u8() {
-                            // If not saved, record the goal for attacking team.
-                            if (home_player.speed < away_player.speed) {
-                                goals_away += 1u64;
-                            } else {
-                                goals_home += 1u64;
-                            }
+            // Attacker shoots, attack stat determines if it's on target.
+            if (attacker.attack > ChaCha::rand_u8()) {
+                // Defender blocks, defense stat determines if it's blocked.
+                if defender.defense < ChaCha::rand_u8() {
+                    // Goalkeeper saves, goalkeeping stat determines if it's saved.
+                    if goalkeeper.goalkeeping < ChaCha::rand_u8() {
+                        // If not saved, record the goal for attacking team.
+                        if (home_player.speed < away_player.speed) {
+                            goals_away += 1u64;
+                        } else {
+                            goals_home += 1u64;
                         }
                     }
                 }
             }
-
-            // const i: u8 = 1u8;
-            if (home_player.speed < away_player.speed) {
-                goals_away += 1u64;
-            } else {
-                goals_home += 1u64;
-            }
         }
+
+        // const i: u8 = 1u8;
+        if (home_player.speed < away_player.speed) {
+            goals_away += 1u64;
+        } else {
+            goals_home += 1u64;
+        }
+        // }
 
         let team_id_home: u8 = home_player.team_id;
         let team_id_away: u8 = home_player.team_id;
@@ -941,7 +945,7 @@ program football_game_v013.aleo {
         joint_piece_winner: puzzle_pieces_v016.leo/JointPieceWinner.record,
         piece_joint_stake: puzzle_pieces_v016.leo/PieceJointStake.record,
         joint_piece_time_claim: puzzle_pieces_v016.leo/JointPieceTimeClaim.record,
-        game_outcome: GameOutcome, // TODO make record in reveal_outcome for finish? 
+        game_outcome: GameOutcome, // TODO Or use field for win lose draw? 
     ) -> (
         puzzle_pieces_v016.leo/Piece.record,
         puzzle_pieces_v016.leo/AuditTransferToWinner.record,
