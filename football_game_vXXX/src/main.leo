@@ -8,7 +8,7 @@ program football_game_v013.aleo {
     /////////////////////////////
 
     // Frontend generates unique id (field) to map gameOutcome.
-    mapping game_outcomes: field => GameOutcome;
+    mapping game_outcomes: address => GameOutcome;
     mapping players: u8 => Player;
 
     transition add_player (player: Player) {
@@ -74,7 +74,6 @@ program football_game_v013.aleo {
     // ix: 1
     record Game {
         owner: address,
-        uuid: field,
         challenger_commit: field,
         opponent_answer: [u8; 11],
         total_pot: u64,
@@ -197,7 +196,6 @@ program football_game_v013.aleo {
         challenger_address: address,
         opponent_address: address,
         opponent_answer: [u8; 11],
-        uuid: field,
         ix: u32,
     }
 
@@ -213,7 +211,6 @@ program football_game_v013.aleo {
         challenger_address: address,
         opponent_address: address,
         opponent_answer: [u8; 11],
-        uuid: field,
         ix: u32,
     }
 
@@ -246,7 +243,6 @@ program football_game_v013.aleo {
         opponent_address: address,
         winner: address,
         loser: address,
-        uuid: field,
         game_outcome: GameOutcome,
         ix: u32,
     }
@@ -271,7 +267,6 @@ program football_game_v013.aleo {
         challenger_answer: [u8; 11],
         game_multisig_seed: field, //game_multisig seed to send to user
         //wheres_alex data
-        uuid: field,
     ) -> (
         puzzle_pieces_v016.leo/PieceClaim.record,
         puzzle_pieces_v016.leo/PieceStake.record,
@@ -363,7 +358,6 @@ program football_game_v013.aleo {
 
 
         let game_record: Game = Game {
-            uuid: uuid,
             owner: game_multisig,
             challenger_commit: challenger_commit,
             opponent_answer: [0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8], // random field for now until opponent answer in accept_game
@@ -665,13 +659,11 @@ program football_game_v013.aleo {
             challenger_address: game_record.challenger_address,
             opponent_address: game_record.opponent_address,
             opponent_answer: opponent_answer,
-            uuid: game_record.uuid,
             ix: 8u32,
         };
 
         let updated_game_record: Game = Game {
             owner: game_record.owner,
-            uuid: game_record.uuid,
             challenger_commit: game_record.challenger_commit,
             opponent_answer: opponent_answer,
             total_pot: game_record.total_pot,
@@ -741,7 +733,6 @@ program football_game_v013.aleo {
             challenger_address: reveal_answer_notification_record.challenger_address,
             opponent_address: reveal_answer_notification_record.opponent_address,
             opponent_answer: reveal_answer_notification_record.opponent_answer,
-            uuid: reveal_answer_notification_record.uuid,
             ix: 11u32,
         };
 
@@ -750,7 +741,7 @@ program football_game_v013.aleo {
         return (challenger_answer_record, calculate_outcome_notification_record)
         
         then finalize (
-            reveal_answer_notification_record.uuid, 
+            reveal_answer_notification_record.game_multisig, 
             reveal_answer_notification_record.challenger_address,
             reveal_answer_notification_record.opponent_address,
             challenger_answer,
@@ -759,7 +750,7 @@ program football_game_v013.aleo {
     }
 
     finalize calculate_outcome (
-        uuid: field,
+        game_multisig: address,
         address_home: address,
         address_away: address,
         home_formation: [u8; 11],
@@ -858,7 +849,7 @@ program football_game_v013.aleo {
             goals_away,
         };
 
-        Mapping::set(game_outcomes, uuid, game_outcome);
+        Mapping::set(game_outcomes, game_multisig, game_outcome);
     }
 
     transition reveal_answer_game (
@@ -924,12 +915,12 @@ program football_game_v013.aleo {
         };
     
         return (revealed_answer_record, audit_revealed_answer_record, joint_piece_winner, audit_joint_piece_winner, game_finish_req_notification_record_opponent, game_finish_req_notification_record_challenger)
-        then finalize (calculated_outcome_notification_record.uuid, game_outcome);
+        then finalize (calculated_outcome_notification_record.game_multisig, game_outcome);
     }
 
-    finalize reveal_answer_game (uuid: field, input_outcome: GameOutcome) {
+    finalize reveal_answer_game (game_multisig: address, input_outcome: GameOutcome) {
         // Compare the input outcome to the stored outcome from mapping.
-        let stored_outcome: GameOutcome = Mapping::get(game_outcomes, uuid);
+        let stored_outcome: GameOutcome = Mapping::get(game_outcomes, game_multisig);
         assert_eq(input_outcome.goals_home, stored_outcome.goals_home);
         assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
     }
@@ -967,7 +958,6 @@ program football_game_v013.aleo {
         );
 
         let updated_game_record: Game = Game {
-            uuid: game_record.uuid,
             owner: game_record.owner,
             challenger_commit: game_record.challenger_commit,
             opponent_answer: game_record.opponent_answer,
@@ -989,7 +979,6 @@ program football_game_v013.aleo {
             opponent_address: game_record.opponent_address,
             winner: joint_piece_winner.winner,
             loser: loser_address,
-            uuid: game_record.uuid,
             game_outcome: game_outcome,
             ix: 10u32,
         };
@@ -1004,18 +993,17 @@ program football_game_v013.aleo {
             opponent_address: game_record.opponent_address,
             winner: joint_piece_winner.winner,
             loser: loser_address,
-            uuid: game_record.uuid,
             game_outcome: game_outcome,
             ix: 10u32,
         };
 
         return (piece_record, audit_transfer_to_winner_record, audit_piece_owner, updated_game_record, game_finished_notification_challenger_record, game_finished_notification_opponent_record)
-        then finalize(game_record.uuid, game_record.challenger_address, game_record.opponent_address, game_outcome);
+        then finalize(game_record.game_multisig, game_record.challenger_address, game_record.opponent_address, game_outcome);
     }
 
-    finalize finish_game (uuid: field, home_address: address, away_address: address, input_outcome: GameOutcome) {
+    finalize finish_game (game_multisig: address, home_address: address, away_address: address, input_outcome: GameOutcome) {
         // Compare the input outcome to the stored outcome from mapping.
-        let stored_outcome: GameOutcome = Mapping::get(game_outcomes, uuid);
+        let stored_outcome: GameOutcome = Mapping::get(game_outcomes, game_multisig);
         assert_eq(input_outcome.goals_home, stored_outcome.goals_home);
         assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
 
@@ -1042,7 +1030,6 @@ program football_game_v013.aleo {
 
         // Update the game state
         let updated_game_record: Game = Game {
-            uuid: game_record.uuid,
             owner: game_record.owner,
             challenger_commit: game_record.challenger_commit,
             opponent_answer: game_record.opponent_answer,
@@ -1075,7 +1062,6 @@ program football_game_v013.aleo {
             opponent_address: game_record.opponent_address,
             winner: game_record.opponent_address,
             loser: game_record.challenger_address,
-            uuid: game_record.uuid,
             game_outcome: game_outcome,
             ix: 10u32,
         };
@@ -1091,7 +1077,6 @@ program football_game_v013.aleo {
             opponent_address: game_record.opponent_address,
             winner: game_record.opponent_address,
             loser: game_record.challenger_address,
-            uuid: game_record.uuid,
             game_outcome: game_outcome,
             ix: 10u32,
         };
