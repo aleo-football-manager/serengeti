@@ -1,5 +1,5 @@
 import puzzle_pieces_v016.leo;
-import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
+import football_pvp_utils_v002.leo; //customized for u8 player array instead of field
 
 program football_game_v013.aleo {
 
@@ -273,10 +273,11 @@ program football_game_v013.aleo {
         puzzle_pieces_v016.leo/ClaimSignature.record,
         puzzle_pieces_v016.leo/Piece.record,
         puzzle_pieces_v016.leo/AuditStakeIn.record,
-        multiparty_pvp_utils_v015_avh.leo/Answer.record,
-        multiparty_pvp_utils_v015_avh.leo/AuditMintAnswer.record,
-        multiparty_pvp_utils_v015_avh.leo/Key.record,
-        multiparty_pvp_utils_v015_avh.leo/AuditKey.record,
+        football_pvp_utils_v002.leo/Answer.record,
+        football_pvp_utils_v002.leo/Answer.record,
+        football_pvp_utils_v002.leo/AuditMintAnswer.record,
+        football_pvp_utils_v002.leo/Key.record,
+        football_pvp_utils_v002.leo/AuditKey.record,
         Game,
         GameReqNotification,
         WaitingAcceptanceNotification,
@@ -331,7 +332,7 @@ program football_game_v013.aleo {
         ) : (
             Key,
             AuditKey
-        ) = multiparty_pvp_utils_v015_avh.leo/mint_multisig_key(game_multisig_seed,challenger_wager_amount,challenger,opponent,game_multisig);
+        ) = football_pvp_utils_v002.leo/mint_multisig_key(game_multisig_seed,challenger_wager_amount,challenger,opponent,game_multisig);
 
 
         let game_request_notification_record: GameReqNotification = GameReqNotification {
@@ -369,7 +370,7 @@ program football_game_v013.aleo {
             ix: 1u32,
         };
 
-        let (challenger_answer_record, audit_mint_answer_record):  (Answer, AuditMintAnswer) = multiparty_pvp_utils_v015_avh.leo/mint_answer(
+        let (challenger_answer_record_for_calculate, challenger_answer_record_for_reveal, audit_mint_answer_record):  (Answer, Answer, AuditMintAnswer) = football_pvp_utils_v002.leo/mint_answer(
                 challenger,
                 opponent,
                 game_multisig,
@@ -391,6 +392,7 @@ program football_game_v013.aleo {
             piece_change_challenger,
             audit_stake_in_record,
             challenger_answer_record,
+            challenger_answer_record_copy,
             audit_mint_answer_record,
             key_record,
             audit_key_record,
@@ -452,7 +454,7 @@ program football_game_v013.aleo {
 
     transition submit_wager (
         opponent_wager_record: puzzle_pieces_v016.leo/Piece.record,
-        key_record: multiparty_pvp_utils_v015_avh.leo/Key.record,
+        key_record: football_pvp_utils_v002.leo/Key.record,
         game_req_notification: GameReqNotification,
         opponent_message_1: field, //from output of useSignature
         opponent_message_2: field,
@@ -707,10 +709,9 @@ program football_game_v013.aleo {
     transition calculate_outcome
     (
         reveal_answer_notification_record: RevealAnswerNotification,
-        challenger_answer_record: multiparty_pvp_utils_v015_avh.leo/Answer.record,
+        challenger_answer_record: football_pvp_utils_v002.leo/Answer.record,
     ) 
     -> (
-        multiparty_pvp_utils_v015_avh.leo/Answer.record,
         CalculatedOutcomeNotification,
         )
     {
@@ -736,15 +737,13 @@ program football_game_v013.aleo {
             ix: 11u32,
         };
 
-        let challenger_answer: [u8;11] = challenger_answer_record.answer;
-
-        return (challenger_answer_record, calculate_outcome_notification_record)
+        return (calculate_outcome_notification_record)
         
         then finalize (
             reveal_answer_notification_record.game_multisig, 
             reveal_answer_notification_record.challenger_address,
             reveal_answer_notification_record.opponent_address,
-            challenger_answer,
+            challenger_answer_record.answer,
             reveal_answer_notification_record.opponent_answer, 
             );
     }
@@ -856,11 +855,11 @@ program football_game_v013.aleo {
         challenger_claim_signature: puzzle_pieces_v016.leo/ClaimSignature.record,
         calculated_outcome_notification_record: CalculatedOutcomeNotification,
         joint_piece_state: puzzle_pieces_v016.leo/JointPieceState.record,
-        challenger_answer_record: multiparty_pvp_utils_v015_avh.leo/Answer.record,
+        challenger_answer_record: football_pvp_utils_v002.leo/Answer.record,
         game_outcome: GameOutcome,
     ) -> (
-        multiparty_pvp_utils_v015_avh.leo/RevealAnswer.record,
-        multiparty_pvp_utils_v015_avh.leo/AuditRevealAnswer.record,
+        football_pvp_utils_v002.leo/RevealAnswer.record,
+        football_pvp_utils_v002.leo/AuditRevealAnswer.record,
         puzzle_pieces_v016.leo/JointPieceWinner.record,
         puzzle_pieces_v016.leo/AuditJointPieceWinner.record,
         GameFinishReqNotification,
@@ -879,7 +878,7 @@ program football_game_v013.aleo {
         let challenger_sig: signature = challenger_claim_signature.sig;
 
         // retrieve revealedanswer record
-        let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = multiparty_pvp_utils_v015_avh.leo/reveal_answer(challenger_answer_record, challenger_sig);
+        let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = football_pvp_utils_v002.leo/reveal_answer(challenger_answer_record, challenger_sig);
 
         let (joint_piece_winner, audit_joint_piece_winner): (JointPieceWinner, AuditJointPieceWinner) = puzzle_pieces_v016.leo/joint_stake_state_update(joint_piece_state, challenger_claim_signature, winner_address);
 

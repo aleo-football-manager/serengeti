@@ -1,5 +1,5 @@
 // The 'multiparty_pvp_utils_v015' program.
-program multiparty_pvp_utils_v015_avh.aleo {
+program football_pvp_utils_v002.aleo {
 
 
     struct Mssage {
@@ -109,7 +109,7 @@ program multiparty_pvp_utils_v015_avh.aleo {
         message_4: field,
         message_5: field,
         sig: signature,
-    ) -> (Answer, AuditMintAnswer) {
+    ) -> (Answer, Answer, AuditMintAnswer) {
         // set puzzle issuing address as issuer:
         let puzzle_issuer: address = aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls;
 
@@ -142,6 +142,22 @@ program multiparty_pvp_utils_v015_avh.aleo {
             ix: 1u32,
         };
 
+        let answer_record_copy: Answer = Answer {
+            owner: challenger_address,
+            challenger_address: challenger_address,
+            opponent_address: opponent_address,
+            game_multisig: game_multisig,
+            amount: amount,
+            nonce: nonce,
+            answer: answer,
+            message_1: message_1,
+            message_2: message_2,
+            message_3: message_3,
+            message_4: message_4,
+            message_5: message_5,
+            ix: 1u32, // TODO: CHANGE THIS
+        };
+
         let audit_record: AuditMintAnswer = AuditMintAnswer {
             owner: puzzle_issuer,
             answer_owner: challenger_address,
@@ -160,7 +176,7 @@ program multiparty_pvp_utils_v015_avh.aleo {
         };
 
 
-        return (answer_record, audit_record);
+        return (answer_record, answer_record_copy, audit_record);
     }
 
     transition mint_multisig_key(

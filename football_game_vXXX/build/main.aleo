@@ -1,5 +1,5 @@
 import puzzle_pieces_v016.aleo;
-import multiparty_pvp_utils_v015_avh.aleo;
+import football_pvp_utils_v002.aleo;
 program football_game_v013.aleo;
 
 
@@ -226,7 +226,7 @@ function propose_game:
     cast r12 into r15 as scalar;
     commit.bhp256 r13 r15 into r16 as field;
     call puzzle_pieces_v016.aleo/stake_transfer_in r0 r2 r3 r4 r5 r1 r6 r7 r8 r9 r10 r11 into r17 r18 r19 r20 r21;
-    call multiparty_pvp_utils_v015_avh.aleo/mint_multisig_key r14 r1 r3 r4 r5 into r22 r23;
+    call football_pvp_utils_v002.aleo/mint_multisig_key r14 r1 r3 r4 r5 into r22 r23;
     add r1 r1 into r24;
     cast r4 r5 1field true r24 r3 r4 2u32 into r25 as GameReqNotification.record;
     add r1 r1 into r26;
@@ -234,16 +234,17 @@ function propose_game:
     cast  0u8 0u8 0u8 0u8 0u8 0u8 0u8 0u8 0u8 0u8 0u8 into r28 as [u8; 11u32];
     add r1 r1 into r29;
     cast r5 r16 r28 r29 r3 r4 r5 1field 1u32 into r30 as Game.record;
-    call multiparty_pvp_utils_v015_avh.aleo/mint_answer r3 r4 r5 r1 r12 r13 r6 r7 r8 r9 r10 r11 into r31 r32;
+    call football_pvp_utils_v002.aleo/mint_answer r3 r4 r5 r1 r12 r13 r6 r7 r8 r9 r10 r11 into r31 r32 r33;
     output r17 as puzzle_pieces_v016.aleo/PieceClaim.record;
     output r18 as puzzle_pieces_v016.aleo/PieceStake.record;
     output r19 as puzzle_pieces_v016.aleo/ClaimSignature.record;
     output r20 as puzzle_pieces_v016.aleo/Piece.record;
     output r21 as puzzle_pieces_v016.aleo/AuditStakeIn.record;
-    output r31 as multiparty_pvp_utils_v015_avh.aleo/Answer.record;
-    output r32 as multiparty_pvp_utils_v015_avh.aleo/AuditMintAnswer.record;
-    output r22 as multiparty_pvp_utils_v015_avh.aleo/Key.record;
-    output r23 as multiparty_pvp_utils_v015_avh.aleo/AuditKey.record;
+    output r31 as football_pvp_utils_v002.aleo/Answer.record;
+    output r32 as football_pvp_utils_v002.aleo/Answer.record;
+    output r33 as football_pvp_utils_v002.aleo/AuditMintAnswer.record;
+    output r22 as football_pvp_utils_v002.aleo/Key.record;
+    output r23 as football_pvp_utils_v002.aleo/AuditKey.record;
     output r30 as Game.record;
     output r25 as GameReqNotification.record;
     output r27 as WaitingAcceptanceNotification.record;
@@ -266,7 +267,7 @@ function challenger_renege_stake:
 
 function submit_wager:
     input r0 as puzzle_pieces_v016.aleo/Piece.record;
-    input r1 as multiparty_pvp_utils_v015_avh.aleo/Key.record;
+    input r1 as football_pvp_utils_v002.aleo/Key.record;
     input r2 as GameReqNotification.record;
     input r3 as field.private;
     input r4 as field.private;
@@ -345,12 +346,11 @@ finalize accept_game:
 
 function calculate_outcome:
     input r0 as RevealAnswerNotification.record;
-    input r1 as multiparty_pvp_utils_v015_avh.aleo/Answer.record;
+    input r1 as football_pvp_utils_v002.aleo/Answer.record;
     assert.eq r0.challenger_address self.signer;
     assert.eq self.caller self.signer;
     cast r0.challenger_address r0.game_multisig 4field true r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_answer 11u32 into r2 as CalculatedOutcomeNotification.record;
     async calculate_outcome r0.game_multisig r0.challenger_address r0.opponent_address r1.answer r0.opponent_answer into r3;
-    output r1 as multiparty_pvp_utils_v015_avh.aleo/Answer.record;
     output r2 as CalculatedOutcomeNotification.record;
     output r3 as football_game_v013.aleo/calculate_outcome.future;
 
@@ -969,7 +969,7 @@ function reveal_answer_game:
     input r0 as puzzle_pieces_v016.aleo/ClaimSignature.record;
     input r1 as CalculatedOutcomeNotification.record;
     input r2 as puzzle_pieces_v016.aleo/JointPieceState.record;
-    input r3 as multiparty_pvp_utils_v015_avh.aleo/Answer.record;
+    input r3 as football_pvp_utils_v002.aleo/Answer.record;
     input r4 as GameOutcome.private;
     assert.eq r2.state_updater_address self.signer;
     assert.eq self.caller self.signer;
@@ -977,13 +977,13 @@ function reveal_answer_game:
     ternary r5 r3.opponent_address r3.challenger_address into r6;
     is.eq r6 r3.challenger_address into r7;
     ternary r7 r3.opponent_address r3.challenger_address into r8;
-    call multiparty_pvp_utils_v015_avh.aleo/reveal_answer r3 r0.sig into r9 r10;
+    call football_pvp_utils_v002.aleo/reveal_answer r3 r0.sig into r9 r10;
     call puzzle_pieces_v016.aleo/joint_stake_state_update r2 r0 r6 into r11 r12;
     cast r3.opponent_address r3.game_multisig 5field true r2.amount r3.challenger_address r3.opponent_address r3.answer r1.opponent_answer r6 r8 9u32 into r13 as GameFinishReqNotification.record;
     cast r3.challenger_address r3.game_multisig 5field true r2.amount r3.challenger_address r3.opponent_address r3.answer r1.opponent_answer r6 r8 9u32 into r14 as GameFinishReqNotification.record;
     async reveal_answer_game r1.game_multisig r4 into r15;
-    output r9 as multiparty_pvp_utils_v015_avh.aleo/RevealAnswer.record;
-    output r10 as multiparty_pvp_utils_v015_avh.aleo/AuditRevealAnswer.record;
+    output r9 as football_pvp_utils_v002.aleo/RevealAnswer.record;
+    output r10 as football_pvp_utils_v002.aleo/AuditRevealAnswer.record;
     output r11 as puzzle_pieces_v016.aleo/JointPieceWinner.record;
     output r12 as puzzle_pieces_v016.aleo/AuditJointPieceWinner.record;
     output r13 as GameFinishReqNotification.record;
