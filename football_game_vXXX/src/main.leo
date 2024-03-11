@@ -1003,7 +1003,7 @@ program football_game_v014.aleo {
             challenger_address: game_record.challenger_address,
             opponent_address: game_record.opponent_address,
             game_multisig: game_record.game_multisig,
-            game_state: 6field,
+            game_state: 9field,
             ix: 0u32,
         };
 
@@ -1021,28 +1021,28 @@ program football_game_v014.aleo {
         let game_finished_notification_challenger_record: GameFinishedNotification = GameFinishedNotification {
             owner: game_record.challenger_address,
             game_multisig: game_record.game_multisig,
-            game_state: 6field,
+            game_state: 9field,
             your_turn: false,
             total_pot: game_record.total_pot,
             challenger_address: game_record.challenger_address,
             opponent_address: game_record.opponent_address,
             winner: game_record.opponent_address,
             loser: game_record.challenger_address,
-            ix: 11u32,
+            ix: 12u32,
         };
 
         // Notification to opponent of game finished
         let game_finished_notification_opponent_record: GameFinishedNotification = GameFinishedNotification {
             owner: game_record.opponent_address,
             game_multisig: game_record.game_multisig,
-            game_state: 6field,
+            game_state: 9field,
             your_turn: false,
             total_pot: game_record.total_pot,
             challenger_address: game_record.challenger_address,
             opponent_address: game_record.opponent_address,
             winner: game_record.opponent_address,
             loser: game_record.challenger_address,
-            ix: 11u32,
+            ix: 12u32,
         };
 
         // Payout to winner
