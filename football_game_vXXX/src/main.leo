@@ -7,35 +7,20 @@ program football_game_v013.aleo {
     // MAPPING                 //
     /////////////////////////////
 
+    // Owner address
+    const OWNER: address = aleo10rdcc92pecx8en6k44zxufvgyy0f98w6c5n7ql6f2er7mehjfyrs3p76nk;
+
     // Frontend generates unique id (field) to map gameOutcome.
     mapping game_outcomes: address => GameOutcome;
     mapping players: u8 => Player;
 
     transition add_player (player: Player) {
-        // Only to be called by the contract owner
-        assert_eq(self.caller, self.signer); // this doesnt work lol? 
+        assert_eq(self.caller, OWNER);
         return then finalize (player);
     }
+    
     finalize add_player (player: Player) {
-        // Player with player_id 0 should have 0 for all stats. Don't allow manually adding this player_id.
-        if (player.player_id == 0u8) {
-            Mapping::set(players, player.player_id, Player{
-                player_id: 0u8,
-                team_id: 0u8,
-                position: 0field, // 0 = Emtpy, 1 = Goalkeep, 2 = Defense, 3 = Mid, 4 = Attack
-                attack: 0u8,
-                defense: 0u8,
-                speed: 0u8,
-                power: 0u8,
-                stamina: 0u8,
-                technique: 0u8,
-                goalkeeping: 0u8,
-            });
-        } else {
-            // TODO: Allow overwrites or not?
-            assert(player.position == 1field || player.position == 2field || player.position == 3field || player.position == 4field);
-            Mapping::set(players, player.player_id, player);
-        }
+        Mapping::set(players, player.player_id, player);
     }
 
 
@@ -243,7 +228,6 @@ program football_game_v013.aleo {
         opponent_address: address,
         winner: address,
         loser: address,
-        game_outcome: GameOutcome,
         ix: u32,
     }
 
@@ -932,7 +916,6 @@ program football_game_v013.aleo {
         joint_piece_winner: puzzle_pieces_v016.leo/JointPieceWinner.record,
         piece_joint_stake: puzzle_pieces_v016.leo/PieceJointStake.record,
         joint_piece_time_claim: puzzle_pieces_v016.leo/JointPieceTimeClaim.record,
-        game_outcome: GameOutcome, // TODO make record in reveal_outcome for finish? 
     ) -> (
         puzzle_pieces_v016.leo/Piece.record,
         puzzle_pieces_v016.leo/AuditTransferToWinner.record,
@@ -948,8 +931,8 @@ program football_game_v013.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        let winner_address: address = game_outcome.goals_home > game_outcome.goals_away ? game_record.challenger_address : game_record.opponent_address;
-        let loser_address: address = game_outcome.goals_home > game_outcome.goals_away ? game_record.opponent_address : game_record.challenger_address;
+        let winner_address: address = joint_piece_winner.winner;
+        let loser_address: address = game_record.challenger_address == joint_piece_winner.winner ? game_record.opponent_address : game_record.challenger_address;
 
         let (piece_record, audit_transfer_to_winner_record, audit_piece_owner): (Piece, AuditTransferToWinner, AuditPieceOwner) = puzzle_pieces_v016.leo/joint_stake_transfer_to_winner(
             joint_piece_winner,
@@ -979,7 +962,6 @@ program football_game_v013.aleo {
             opponent_address: game_record.opponent_address,
             winner: joint_piece_winner.winner,
             loser: loser_address,
-            game_outcome: game_outcome,
             ix: 10u32,
         };
 
@@ -993,20 +975,10 @@ program football_game_v013.aleo {
             opponent_address: game_record.opponent_address,
             winner: joint_piece_winner.winner,
             loser: loser_address,
-            game_outcome: game_outcome,
             ix: 10u32,
         };
 
-        return (piece_record, audit_transfer_to_winner_record, audit_piece_owner, updated_game_record, game_finished_notification_challenger_record, game_finished_notification_opponent_record)
-        then finalize(game_record.game_multisig, game_record.challenger_address, game_record.opponent_address, game_outcome);
-    }
-
-    finalize finish_game (game_multisig: address, home_address: address, away_address: address, input_outcome: GameOutcome) {
-        // Compare the input outcome to the stored outcome from mapping.
-        let stored_outcome: GameOutcome = Mapping::get(game_outcomes, game_multisig);
-        assert_eq(input_outcome.goals_home, stored_outcome.goals_home);
-        assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
-
+        return (piece_record, audit_transfer_to_winner_record, audit_piece_owner, updated_game_record, game_finished_notification_challenger_record, game_finished_notification_opponent_record);
     }
 
     // called by ms key via opponent to finish the game and get the total pot!
@@ -1062,7 +1034,6 @@ program football_game_v013.aleo {
             opponent_address: game_record.opponent_address,
             winner: game_record.opponent_address,
             loser: game_record.challenger_address,
-            game_outcome: game_outcome,
             ix: 10u32,
         };
 
@@ -1077,7 +1048,6 @@ program football_game_v013.aleo {
             opponent_address: game_record.opponent_address,
             winner: game_record.opponent_address,
             loser: game_record.challenger_address,
-            game_outcome: game_outcome,
             ix: 10u32,
         };
 
