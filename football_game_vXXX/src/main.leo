@@ -168,11 +168,11 @@ program football_game_v014.aleo {
         ix: u32,
     }
     
-    // sent to opponent on accept game for FE/client detection.
-    // consumed in finish_game/claim total pot
+    // sent to challenger on accept game for FE/client detection.
+    // consumed in reveal answer
     // ix: 8
-    record CalculatedOutcomeNotification {
-        owner: address, //opponent
+    record RevealAnswerNotification {
+        owner: address, //challenger
         game_multisig: address,
         game_state: field,
         your_turn: bool,
@@ -180,14 +180,27 @@ program football_game_v014.aleo {
         challenger_address: address,
         opponent_address: address,
         opponent_answer: [u8; 11],
+        ix: u32,
+    }
+
+    // sent to opponent on accept game for FE/client detection.
+    // ix: 9
+    record WaitingCalculationNotification {
+        owner: address, // opponent
+        game_multisig: address,
+        game_state: field,
+        your_turn: bool,
+        total_pot: u64,
+        challenger_address: address,
+        opponent_address: address,
         ix: u32,
     }
 
     // sent to challenger on accept game for FE/client detection.
-    // consumed in reveal answer
-    // ix: 9
-    record RevealAnswerNotification {
-        owner: address, //opponent
+    // consumed in finish_game/claim total pot
+    // ix: 10
+    record CalculatedOutcomeNotification {
+        owner: address, //challenger
         game_multisig: address,
         game_state: field,
         your_turn: bool,
@@ -198,8 +211,9 @@ program football_game_v014.aleo {
         ix: u32,
     }
 
+
     // sent to opponent on reveal answer for FE/client detection.
-    // ix: 10
+    // ix: 11
     record GameFinishReqNotification {
         owner: address, //opponent
         game_multisig: address,
@@ -216,7 +230,7 @@ program football_game_v014.aleo {
     }
 
     // sent to both opponent and challenger on finish game
-    // ix: 11
+    // ix: 12
     record GameFinishedNotification {
         owner: address,
         game_multisig: address,
@@ -642,7 +656,7 @@ program football_game_v014.aleo {
             challenger_address: game_record.challenger_address,
             opponent_address: game_record.opponent_address,
             opponent_answer: opponent_answer,
-            ix: 9u32,
+            ix: 8u32,
         };
 
         let updated_game_record: Game = Game {
@@ -695,6 +709,7 @@ program football_game_v014.aleo {
     -> (
         multiparty_pvp_utils_v015_avh.leo/Answer.record,
         CalculatedOutcomeNotification,
+        CalculatedOutcomeNotification,
         )
     {
 
@@ -707,6 +722,20 @@ program football_game_v014.aleo {
 
 // TODO create record for opponent also
 
+
+        // sent to opponent on calculate_outcome
+        let waiting_calculation_notification_record: WaitingCalculationNotification = WaitingCalculationNotification {
+            owner: reveal_answer_notification_record.opponent_address,
+            game_multisig: reveal_answer_notification_record.game_multisig,
+            game_state: 4field,
+            your_turn: true,
+            total_pot: reveal_answer_notification_record.total_pot,
+            challenger_address: reveal_answer_notification_record.challenger_address,
+            opponent_address: reveal_answer_notification_record.opponent_address,
+            ix: 9u32,
+        };
+
+
         // sent to challenger on calculate_outcome
         let calculate_outcome_notification_record: CalculatedOutcomeNotification = CalculatedOutcomeNotification {
             owner: reveal_answer_notification_record.challenger_address,
@@ -717,7 +746,7 @@ program football_game_v014.aleo {
             challenger_address: reveal_answer_notification_record.challenger_address,
             opponent_address: reveal_answer_notification_record.opponent_address,
             opponent_answer: reveal_answer_notification_record.opponent_answer,
-            ix: 8u32,
+            ix: 10u32,
         };
 
         let challenger_answer: [u8;11] = challenger_answer_record.answer;
@@ -751,41 +780,6 @@ program football_game_v014.aleo {
         let away_player: Player = Mapping::get(players, away_formation[10u8]);
 
         let valid_formations: bool = true;
-
-        // // Validation of formation
-        // for formation_i: u8 in 0u8..2u8 {
-        //     let formation: [u8;11] = home_formation;
-        //     if formation_i == 1u8 {
-        //         formation = away_formation;
-        //     }
-
-        //     let amount_goalkeepers: u8 = 0u8;
-        //     let same_team: bool = true;
-        //     let player_one: Player = Mapping::get(players, formation[0u8]);
-
-        //     for i: u8 in 1u8..11u8 {
-        //         let player: Player = Mapping::get(players, formation[i]);
-        //         if (player.position == 1field) {
-        //             amount_goalkeepers += 1u8;
-        //         }
-        //         if player.team_id != player_one.team_id {
-        //             same_team = false;
-        //         }
-        //     }
-        //     if !same_team || amount_goalkeepers != 1u8 {
-        //         valid_formations = false;
-        //         if formation_i == 0u8 {
-        //             goals_home = 3u64;
-        //             goals_away = 0u64;
-        //             // Home formation invalid => home team loss
-        //         } else {
-        //             // Away formation invalid => away team loss
-        //             goals_home = 0u64;
-        //             goals_away = 3u64;
-        //         }
-        //         // Todo: implement draw for both invalid outcomes
-        //     }
-        // }
         
         if valid_formations {
             for i: u8 in 1u8..11u8 {
@@ -880,7 +874,7 @@ program football_game_v014.aleo {
             opponent_answer: calculated_outcome_notification_record.opponent_answer,
             winner: winner_address,
             loser: loser_address,
-            ix: 10u32,
+            ix: 11u32,
         };
 
         let game_finish_req_notification_record_challenger: GameFinishReqNotification = GameFinishReqNotification{
@@ -895,7 +889,7 @@ program football_game_v014.aleo {
             opponent_answer: calculated_outcome_notification_record.opponent_answer,
             winner: winner_address,
             loser: loser_address,
-            ix: 10u32,
+            ix: 11u32,
         };
     
         return (revealed_answer_record, audit_revealed_answer_record, joint_piece_winner, audit_joint_piece_winner, game_finish_req_notification_record_opponent, game_finish_req_notification_record_challenger)
@@ -962,7 +956,7 @@ program football_game_v014.aleo {
             opponent_address: game_record.opponent_address,
             winner: joint_piece_winner.winner,
             loser: loser_address,
-            ix: 11u32,
+            ix: 12u32,
         };
 
         let game_finished_notification_opponent_record: GameFinishedNotification = GameFinishedNotification {
@@ -975,7 +969,7 @@ program football_game_v014.aleo {
             opponent_address: game_record.opponent_address,
             winner: joint_piece_winner.winner,
             loser: loser_address,
-            ix: 11u32,
+            ix: 12u32,
         };
 
         return (piece_record, audit_transfer_to_winner_record, audit_piece_owner, updated_game_record, game_finished_notification_challenger_record, game_finished_notification_opponent_record);
