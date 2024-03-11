@@ -10,15 +10,16 @@ import os
 load_dotenv()
 
 # Your private key (loaded from .env file)
-private_key = os.getenv('PRIVATE_KEY_MAIN')
+private_key = os.getenv('PRIVATE_KEY')
 
 # Load the CSV file
-csv_file_path = '../files/players_final_u8_short.csv'
+csv_file_path = '../files/players_final_u8_diff.csv'
 df = pd.read_csv(csv_file_path)
 
 
 # Loop through each row in the dataframe
 for index, row in df.iterrows():
+    print(f"Processing player {row['player_uid']}")
     # Constructing the CLI command
     cli_command = (
         f"snarkos developer execute \"football_game_v012.aleo\" \"add_player\" "
@@ -27,7 +28,7 @@ for index, row in df.iterrows():
         f"power: {row['power']}u8,stamina: {row['stamina']}u8,technique: {row['technique']}u8,"
         f"goalkeeping: {row['goalkeeping']}u8}}\" --private-key \"{private_key}\" "
         f"--query \"https://api.explorer.aleo.org/v1\" --broadcast \"https://api.explorer.aleo.org/v1/testnet3/transaction/broadcast\" "
-        f"--priority-fee 1000000"
+        f"--priority-fee 0"
     )
 
     # print(cli_command)
