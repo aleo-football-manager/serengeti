@@ -1,7 +1,7 @@
 import puzzle_pieces_v016.leo;
 import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
 
-program football_game_v013.aleo {
+program football_game_v014.aleo {
 
     /////////////////////////////
     // MAPPING                 //

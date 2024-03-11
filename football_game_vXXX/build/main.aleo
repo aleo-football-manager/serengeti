@@ -305,7 +305,7 @@ function accept_game:
     assert.eq self.caller self.signer;
     call puzzle_pieces_v016.aleo/transfer_stakes_to_joint r2 r3 r4 r5 r6 into r7 r8 r9 r10;
     cast r0.opponent_address r0.owner 3field false r0.total_pot r0.challenger_address r0.opponent_address 7u32 into r11 as WaitingRevealNotification.record;
-    cast r0.challenger_address r0.owner 3field true r0.total_pot r0.challenger_address r0.opponent_address r1 8u32 into r12 as RevealAnswerNotification.record;
+    cast r0.challenger_address r0.owner 3field true r0.total_pot r0.challenger_address r0.opponent_address r1 9u32 into r12 as RevealAnswerNotification.record;
     cast r0.owner r0.challenger_commit r1 r0.total_pot r0.challenger_address r0.opponent_address r0.game_multisig 3field 1u32 into r13 as Game.record;
     async accept_game r6 r1 into r14;
     output r7 as puzzle_pieces_v016.aleo/PieceJointStake.record;
@@ -333,7 +333,7 @@ function calculate_outcome:
     input r1 as multiparty_pvp_utils_v015_avh.aleo/Answer.record;
     assert.eq r0.challenger_address self.signer;
     assert.eq self.caller self.signer;
-    cast r0.challenger_address r0.game_multisig 4field true r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_answer 11u32 into r2 as CalculatedOutcomeNotification.record;
+    cast r0.challenger_address r0.game_multisig 4field true r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_answer 8u32 into r2 as CalculatedOutcomeNotification.record;
     async calculate_outcome r0.game_multisig r0.challenger_address r0.opponent_address r1.answer r0.opponent_answer into r3;
     output r1 as multiparty_pvp_utils_v015_avh.aleo/Answer.record;
     output r2 as CalculatedOutcomeNotification.record;
@@ -964,8 +964,8 @@ function reveal_answer_game:
     ternary r7 r3.opponent_address r3.challenger_address into r8;
     call multiparty_pvp_utils_v015_avh.aleo/reveal_answer r3 r0.sig into r9 r10;
     call puzzle_pieces_v016.aleo/joint_stake_state_update r2 r0 r6 into r11 r12;
-    cast r3.opponent_address r3.game_multisig 5field true r2.amount r3.challenger_address r3.opponent_address r3.answer r1.opponent_answer r6 r8 9u32 into r13 as GameFinishReqNotification.record;
-    cast r3.challenger_address r3.game_multisig 5field true r2.amount r3.challenger_address r3.opponent_address r3.answer r1.opponent_answer r6 r8 9u32 into r14 as GameFinishReqNotification.record;
+    cast r3.opponent_address r3.game_multisig 5field true r2.amount r3.challenger_address r3.opponent_address r3.answer r1.opponent_answer r6 r8 10u32 into r13 as GameFinishReqNotification.record;
+    cast r3.challenger_address r3.game_multisig 5field true r2.amount r3.challenger_address r3.opponent_address r3.answer r1.opponent_answer r6 r8 10u32 into r14 as GameFinishReqNotification.record;
     async reveal_answer_game r1.game_multisig r4 into r15;
     output r9 as multiparty_pvp_utils_v015_avh.aleo/RevealAnswer.record;
     output r10 as multiparty_pvp_utils_v015_avh.aleo/AuditRevealAnswer.record;
@@ -993,9 +993,9 @@ function finish_game:
     is.eq r0.challenger_address r1.winner into r4;
     ternary r4 r0.opponent_address r0.challenger_address into r5;
     call puzzle_pieces_v016.aleo/joint_stake_transfer_to_winner r1 r2 r3 into r6 r7 r8;
-    cast r0.owner r0.challenger_commit r0.opponent_answer r0.total_pot r0.challenger_address r0.opponent_address r0.game_multisig 3field 0u32 into r9 as Game.record;
-    cast r0.challenger_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r5 10u32 into r10 as GameFinishedNotification.record;
-    cast r0.opponent_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r5 10u32 into r11 as GameFinishedNotification.record;
+    cast r0.owner r0.challenger_commit r0.opponent_answer r0.total_pot r0.challenger_address r0.opponent_address r0.game_multisig 6field 0u32 into r9 as Game.record;
+    cast r0.challenger_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r5 11u32 into r10 as GameFinishedNotification.record;
+    cast r0.opponent_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r1.winner r5 11u32 into r11 as GameFinishedNotification.record;
     output r6 as puzzle_pieces_v016.aleo/Piece.record;
     output r7 as puzzle_pieces_v016.aleo/AuditTransferToWinner.record;
     output r8 as puzzle_pieces_v016.aleo/AuditPieceOwner.record;
@@ -1011,10 +1011,10 @@ function finish_game_by_timeout:
     input r3 as signature.private;
     assert.eq r0.owner self.signer;
     assert.eq self.caller self.signer;
-    cast r0.owner r0.challenger_commit r0.opponent_answer r0.total_pot r0.challenger_address r0.opponent_address r0.game_multisig 3field 0u32 into r4 as Game.record;
+    cast r0.owner r0.challenger_commit r0.opponent_answer r0.total_pot r0.challenger_address r0.opponent_address r0.game_multisig 6field 0u32 into r4 as Game.record;
     cast r0.challenger_address r0.opponent_address 0u8 0u8 0u64 3u64 into r5 as GameOutcome;
-    cast r0.challenger_address r0.game_multisig 7field false r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_address r0.challenger_address 10u32 into r6 as GameFinishedNotification.record;
-    cast r0.opponent_address r0.game_multisig 7field false r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_address r0.challenger_address 10u32 into r7 as GameFinishedNotification.record;
+    cast r0.challenger_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_address r0.challenger_address 11u32 into r6 as GameFinishedNotification.record;
+    cast r0.opponent_address r0.game_multisig 6field false r0.total_pot r0.challenger_address r0.opponent_address r0.opponent_address r0.challenger_address 11u32 into r7 as GameFinishedNotification.record;
     call puzzle_pieces_v016.aleo/joint_timeout_to_opponent r1 r2 r3 into r8 r9;
     async finish_game_by_timeout r2.block_ht into r10;
     output r8 as puzzle_pieces_v016.aleo/Piece.record;
