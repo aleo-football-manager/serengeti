@@ -708,7 +708,7 @@ program football_game_v014.aleo {
     ) 
     -> (
         multiparty_pvp_utils_v015_avh.leo/Answer.record,
-        CalculatedOutcomeNotification,
+        WaitingCalculationNotification,
         CalculatedOutcomeNotification,
         )
     {
@@ -751,7 +751,7 @@ program football_game_v014.aleo {
 
         let challenger_answer: [u8;11] = challenger_answer_record.answer;
 
-        return (challenger_answer_record, calculate_outcome_notification_record)
+        return (challenger_answer_record, waiting_calculation_notification_record, calculate_outcome_notification_record)
         
         then finalize (
             reveal_answer_notification_record.game_multisig, 
