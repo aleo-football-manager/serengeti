@@ -3,7 +3,7 @@
 public player: Player = Player {
         player_id: 200u8,
         team_id: 200u8,
-        position: 0field, // 0 = Emtpy, 1 = Goalkeep, 2 = Defense, 3 = Mid, 4 = Attack
+        position: 0field,
         attack: 200u8,
         defense: 200u8,
         speed: 200u8,
