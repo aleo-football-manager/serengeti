@@ -1,57 +1,53 @@
-program cost_tests_calc_v001.aleo;
+program cost_tests_calc_v005.aleo;
 
 
 
-function greater_1:
+mapping randomness_u8:
+	key as u8.public;
+	value as [u8; 5u32].public;
+
+
+mapping randomness_u32:
+	key as u32.public;
+	value as [u32; 5u32].public;
+
+function random:
     input r0 as u8.private;
-    input r1 as u8.private;
-    async greater_1 r0 r1 into r2;
-    output r2 as cost_tests_calc_v001.aleo/greater_1.future;
+    async random r0 into r1;
+    output r1 as cost_tests_calc_v005.aleo/random.future;
 
-finalize greater_1:
+finalize random:
     input r0 as u8.public;
-    input r1 as u8.public;
-    gt r0 r1 into r2;
+    rand.chacha into r1 as u8;
+    rand.chacha into r2 as u8;
+    rand.chacha into r3 as u8;
+    rand.chacha into r4 as u8;
+    rand.chacha into r5 as u8;
+    cast  r1 r2 r3 r4 r5 into r6 as [u8; 5u32];
+    set r6 into randomness_u8[r0];
 
 
-function greater_2:
-    input r0 as u8.private;
-    input r1 as u8.private;
-    async greater_2 r0 r1 into r2;
-    output r2 as cost_tests_calc_v001.aleo/greater_2.future;
-
-finalize greater_2:
-    input r0 as u8.public;
-    input r1 as u8.public;
-    gt r0 r1 into r2;
+closure modmod:
+    input r0 as u32;
+    input r1 as u32;
+    input r2 as u32;
+    mod r0 r1 into r3;
+    mod r3 r2 into r4;
+    output r4 as u32;
 
 
-function greater_1_field:
-    input r0 as field.private;
-    input r1 as field.private;
-    async greater_1_field r0 r1 into r2;
-    output r2 as cost_tests_calc_v001.aleo/greater_1_field.future;
+function prandom:
+    input r0 as u32.private;
+    async prandom r0 into r1;
+    output r1 as cost_tests_calc_v005.aleo/prandom.future;
 
-finalize greater_1_field:
-    input r0 as field.public;
-    input r1 as field.public;
-    gt r0 r1 into r2;
-
-
-function greater_2_field:
-    input r0 as field.private;
-    input r1 as field.private;
-    async greater_2_field r0 r1 into r2;
-    output r2 as cost_tests_calc_v001.aleo/greater_2_field.future;
-
-finalize greater_2_field:
-    input r0 as field.public;
-    input r1 as field.public;
-    gt r0 r1 into r2;
-
-
-function main:
-    input r0 as u8.private;
-    input r1 as u8.private;
-    add r0 r1 into r2;
-    output r2 as u8.private;
+finalize prandom:
+    input r0 as u32.public;
+    rand.chacha into r1 as u32;
+    mod r1 100u32 into r2;
+    call modmod r1 5433452u32 100u32 into r3;
+    call modmod r1 27552u32 100u32 into r4;
+    call modmod r1 15433452u32 100u32 into r5;
+    call modmod r1 92452u32 100u32 into r6;
+    cast  r2 r3 r4 r5 r6 into r7 as [u32; 5u32];
+    set r7 into randomness_u32[r0];

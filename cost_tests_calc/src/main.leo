@@ -1,33 +1,34 @@
 // The 'cost_tests' program.
-program cost_tests_calc_v001.aleo {
+program cost_tests_calc_v004.aleo {
     
-    transition greater_1 (var1: u8, var2: u8)  {
-        return then finalize (var1, var2);
+    mapping randomness_u8: u8 => [u8;5];
+    mapping randomness_u32: u32 => [u32; 5];
+
+    transition random (i: u8)  {
+        return then finalize(i);
     }
-    finalize greater_1 (var1: u8, var2: u8) {
-        let r: bool = var1.gt(var2);
-    }
-    transition greater_2 (var1: u8, var2: u8)  {
-        return then finalize (var1, var2);
-    }
-    finalize greater_2 (var1: u8, var2: u8) {
-        let r: bool = var1 > var2;
-    }
-    transition greater_1_field (var1: field, var2: field)  {
-        return then finalize (var1, var2);
-    }
-    finalize greater_1_field (var1: field, var2: field) {
-        let r: bool = var1.gt(var2);
-    }
-    transition greater_2_field (var1: field, var2: field)  {
-        return then finalize (var1, var2);
-    }
-    finalize greater_2_field (var1: field, var2: field) {
-        let r: bool = var1 > var2;
+    finalize random (i: u8) {
+        Mapping::set(randomness_u8, i, [ChaCha::rand_u8(),ChaCha::rand_u8(),ChaCha::rand_u8(),ChaCha::rand_u8(),ChaCha::rand_u8()]);
     }
 
-    transition main (a: u8, b: u8) -> u8 {
-        let c: u8 = a + b;
-        return c;
+    transition prandom (i: u32)  {
+        return then finalize(i);
+    }
+    
+
+    finalize prandom (i: u32) {
+        let random_1: u32 = ChaCha::rand_u32();
+        Mapping::set(randomness_u32, i, [
+            random_1.mod(100u32),
+            random_1.mod(5433452u32).mod(100u32),
+            random_1.mod(27552u32).mod(100u32),
+            random_1.mod(15433452u32).mod(100u32),
+            random_1.mod(92452u32).mod(100u32)]);
+    }
+
+
+    function modmod(val: u32, mod1: u32, mod2: u32) -> u32 {
+        let result: u32 = val.mod(mod1).mod(mod2);
+        return result;
     }
 }
