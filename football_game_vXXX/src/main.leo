@@ -786,25 +786,29 @@ program football_game_v014.aleo {
                 // See which team attacks 
                 home_player = Mapping::get(players, home_formation[i]);
                 away_player = Mapping::get(players, away_formation[i]);
-                let attacker: Player = home_player.speed > away_player.speed ? home_player : away_player;
-                let defender: Player = home_player.speed > away_player.speed ? away_player : home_player;
-                let goalkeeper: Player = home_player.speed > away_player.speed ? Mapping::get(players, away_formation[0u8]) : Mapping::get(players, home_formation[0u8]);
+                
+                let fast: u8 = ChaCha::rand_u8().mod(home_player.speed + away_player.speed); // todo ensure total speed != 0? maybe check speed > 0 in add player
 
-                // Attacker shoots, attack stat determines if it's on target.
-                if (attacker.attack > ChaCha::rand_u8()) {
-                    // Defender blocks, defense stat determines if it's blocked.
-                    if defender.defense < ChaCha::rand_u8() {
-                        // Goalkeeper saves, goalkeeping stat determines if it's saved.
-                        if goalkeeper.goalkeeping < ChaCha::rand_u8() {
-                            // If not saved, record the goal for attacking team.
-                            if (home_player.speed < away_player.speed) {
-                                goals_away += 1u64;
-                            } else {
-                                goals_home += 1u64;
-                            }
-                        }
-                    }
-                }
+                let home_first: bool = fast < home_player.speed;
+                let attacker: Player = home_first ? home_player : away_player;
+                let defender: Player = home_first ? away_player : home_player;
+                let goalkeeper: Player = home_first ? Mapping::get(players, away_formation[0u8]) : Mapping::get(players, home_formation[0u8]);
+
+                // // Attacker shoots, attack stat determines if it's on target.
+                // if (attacker.attack > ChaCha::rand_u8()) {
+                //     // Defender blocks, defense stat determines if it's blocked.
+                //     if defender.defense < ChaCha::rand_u8() {
+                //         // Goalkeeper saves, goalkeeping stat determines if it's saved.
+                //         if goalkeeper.goalkeeping < ChaCha::rand_u8() {
+                //             // If not saved, record the goal for attacking team.
+                //             if (home_player.speed < away_player.speed) {
+                //                 goals_away += 1u64;
+                //             } else {
+                //                 goals_home += 1u64;
+                //             }
+                //         }
+                //     }
+                // }
             }
 
             // const i: u8 = 1u8;
