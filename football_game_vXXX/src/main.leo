@@ -808,8 +808,14 @@ program football_game_v013.aleo {
                 // See which team attacks 
                 home_player = Mapping::get(players, home_formation[i]);
                 away_player = Mapping::get(players, away_formation[i]);
-                let attacker: Player = home_player.speed > away_player.speed ? home_player : away_player;
-                let defender: Player = home_player.speed > away_player.speed ? away_player : home_player;
+                let attacker: Player = home_player;
+                let defender: Player = away_player;
+                if (home_player.speed < away_player.speed) {
+                    attacker = away_player;
+                    defender = home_player;
+                } else {
+
+                }
                 let goalkeeper: Player = home_player.speed > away_player.speed ? Mapping::get(players, away_formation[0u8]) : Mapping::get(players, home_formation[0u8]);
 
                 // Attacker shoots, attack stat determines if it's on target.
