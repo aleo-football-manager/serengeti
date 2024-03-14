@@ -1,41 +1,26 @@
 import puzzle_pieces_v016.leo;
 import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
 
-program football_game_v013.aleo {
+program football_game_v014.aleo {
 
     /////////////////////////////
     // MAPPING                 //
     /////////////////////////////
+
+    // Owner address
+    const OWNER: address = aleo10rdcc92pecx8en6k44zxufvgyy0f98w6c5n7ql6f2er7mehjfyrs3p76nk;
 
     // Frontend generates unique id (field) to map gameOutcome.
     mapping game_outcomes: address => GameOutcome;
     mapping players: u8 => Player;
 
     transition add_player (player: Player) {
-        // Only to be called by the contract owner
-        assert_eq(self.caller, self.signer); // this doesnt work lol? 
+        assert_eq(self.caller, OWNER);
         return then finalize (player);
     }
+    
     finalize add_player (player: Player) {
-        // Player with player_id 0 should have 0 for all stats. Don't allow manually adding this player_id.
-        if (player.player_id == 0u8) {
-            Mapping::set(players, player.player_id, Player{
-                player_id: 0u8,
-                team_id: 0u8,
-                position: 0field, // 0 = Emtpy, 1 = Goalkeep, 2 = Defense, 3 = Mid, 4 = Attack
-                attack: 0u8,
-                defense: 0u8,
-                speed: 0u8,
-                power: 0u8,
-                stamina: 0u8,
-                technique: 0u8,
-                goalkeeping: 0u8,
-            });
-        } else {
-            // TODO: Allow overwrites or not?
-            assert(player.position == 1field || player.position == 2field || player.position == 3field || player.position == 4field);
-            Mapping::set(players, player.player_id, player);
-        }
+        Mapping::set(players, player.player_id, player);
     }
 
 
@@ -90,10 +75,9 @@ program football_game_v013.aleo {
         // 1 -> challenger proposed game
         // 2 -> opponent matched wager
         // 3 -> accepted game
-        // 4 -> determine winner using randomness
-        // 5 -> challenger revealed answer +
-        // 6 -> process outcome and claim total pot
-        // 7 -> finished game
+        // 4 -> calculate outcome (answers + randomness)
+        // 5 -> challenger reveal answers
+        // 6 -> finished game
         //
         // ALTERNATE EXIT PATHS
         // 9 -> timeout finished game
@@ -184,26 +168,11 @@ program football_game_v013.aleo {
         ix: u32,
     }
     
-    // sent to opponent on accept game for FE/client detection.
-    // consumed in finish_game/claim total pot
-    // ix: 7
-    record CalculatedOutcomeNotification {
-        owner: address, //opponent
-        game_multisig: address,
-        game_state: field,
-        your_turn: bool,
-        total_pot: u64,
-        challenger_address: address,
-        opponent_address: address,
-        opponent_answer: [u8; 11],
-        ix: u32,
-    }
-
     // sent to challenger on accept game for FE/client detection.
     // consumed in reveal answer
     // ix: 8
     record RevealAnswerNotification {
-        owner: address, //opponent
+        owner: address, //challenger
         game_multisig: address,
         game_state: field,
         your_turn: bool,
@@ -214,8 +183,37 @@ program football_game_v013.aleo {
         ix: u32,
     }
 
-    // sent to opponent on reveal answer for FE/client detection.
+    // sent to opponent on accept game for FE/client detection.
     // ix: 9
+    record WaitingCalculationNotification {
+        owner: address, // opponent
+        game_multisig: address,
+        game_state: field,
+        your_turn: bool,
+        total_pot: u64,
+        challenger_address: address,
+        opponent_address: address,
+        ix: u32,
+    }
+
+    // sent to challenger on accept game for FE/client detection.
+    // consumed in finish_game/claim total pot
+    // ix: 10
+    record CalculatedOutcomeNotification {
+        owner: address, //challenger
+        game_multisig: address,
+        game_state: field,
+        your_turn: bool,
+        total_pot: u64,
+        challenger_address: address,
+        opponent_address: address,
+        opponent_answer: [u8; 11],
+        ix: u32,
+    }
+
+
+    // sent to opponent on reveal answer for FE/client detection.
+    // ix: 11
     record GameFinishReqNotification {
         owner: address, //opponent
         game_multisig: address,
@@ -232,7 +230,7 @@ program football_game_v013.aleo {
     }
 
     // sent to both opponent and challenger on finish game
-    // ix: 10
+    // ix: 12
     record GameFinishedNotification {
         owner: address,
         game_multisig: address,
@@ -243,7 +241,6 @@ program football_game_v013.aleo {
         opponent_address: address,
         winner: address,
         loser: address,
-        game_outcome: GameOutcome,
         ix: u32,
     }
 
@@ -711,6 +708,7 @@ program football_game_v013.aleo {
     ) 
     -> (
         multiparty_pvp_utils_v015_avh.leo/Answer.record,
+        WaitingCalculationNotification,
         CalculatedOutcomeNotification,
         )
     {
@@ -722,8 +720,23 @@ program football_game_v013.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
+// TODO create record for opponent also
 
-        // sent to challenger on accept_game
+
+        // sent to opponent on calculate_outcome
+        let waiting_calculation_notification_record: WaitingCalculationNotification = WaitingCalculationNotification {
+            owner: reveal_answer_notification_record.opponent_address,
+            game_multisig: reveal_answer_notification_record.game_multisig,
+            game_state: 4field,
+            your_turn: true,
+            total_pot: reveal_answer_notification_record.total_pot,
+            challenger_address: reveal_answer_notification_record.challenger_address,
+            opponent_address: reveal_answer_notification_record.opponent_address,
+            ix: 9u32,
+        };
+
+
+        // sent to challenger on calculate_outcome
         let calculate_outcome_notification_record: CalculatedOutcomeNotification = CalculatedOutcomeNotification {
             owner: reveal_answer_notification_record.challenger_address,
             game_multisig: reveal_answer_notification_record.game_multisig,
@@ -733,12 +746,12 @@ program football_game_v013.aleo {
             challenger_address: reveal_answer_notification_record.challenger_address,
             opponent_address: reveal_answer_notification_record.opponent_address,
             opponent_answer: reveal_answer_notification_record.opponent_answer,
-            ix: 11u32,
+            ix: 10u32,
         };
 
         let challenger_answer: [u8;11] = challenger_answer_record.answer;
 
-        return (challenger_answer_record, calculate_outcome_notification_record)
+        return (challenger_answer_record, waiting_calculation_notification_record, calculate_outcome_notification_record)
         
         then finalize (
             reveal_answer_notification_record.game_multisig, 
@@ -767,41 +780,6 @@ program football_game_v013.aleo {
         let away_player: Player = Mapping::get(players, away_formation[10u8]);
 
         let valid_formations: bool = true;
-
-        // // Validation of formation
-        // for formation_i: u8 in 0u8..2u8 {
-        //     let formation: [u8;11] = home_formation;
-        //     if formation_i == 1u8 {
-        //         formation = away_formation;
-        //     }
-
-        //     let amount_goalkeepers: u8 = 0u8;
-        //     let same_team: bool = true;
-        //     let player_one: Player = Mapping::get(players, formation[0u8]);
-
-        //     for i: u8 in 1u8..11u8 {
-        //         let player: Player = Mapping::get(players, formation[i]);
-        //         if (player.position == 1field) {
-        //             amount_goalkeepers += 1u8;
-        //         }
-        //         if player.team_id != player_one.team_id {
-        //             same_team = false;
-        //         }
-        //     }
-        //     if !same_team || amount_goalkeepers != 1u8 {
-        //         valid_formations = false;
-        //         if formation_i == 0u8 {
-        //             goals_home = 3u64;
-        //             goals_away = 0u64;
-        //             // Home formation invalid => home team loss
-        //         } else {
-        //             // Away formation invalid => away team loss
-        //             goals_home = 0u64;
-        //             goals_away = 3u64;
-        //         }
-        //         // Todo: implement draw for both invalid outcomes
-        //     }
-        // }
         
         if valid_formations {
             for i: u8 in 1u8..11u8 {
@@ -896,7 +874,7 @@ program football_game_v013.aleo {
             opponent_answer: calculated_outcome_notification_record.opponent_answer,
             winner: winner_address,
             loser: loser_address,
-            ix: 9u32,
+            ix: 11u32,
         };
 
         let game_finish_req_notification_record_challenger: GameFinishReqNotification = GameFinishReqNotification{
@@ -911,7 +889,7 @@ program football_game_v013.aleo {
             opponent_answer: calculated_outcome_notification_record.opponent_answer,
             winner: winner_address,
             loser: loser_address,
-            ix: 9u32,
+            ix: 11u32,
         };
     
         return (revealed_answer_record, audit_revealed_answer_record, joint_piece_winner, audit_joint_piece_winner, game_finish_req_notification_record_opponent, game_finish_req_notification_record_challenger)
@@ -932,7 +910,6 @@ program football_game_v013.aleo {
         joint_piece_winner: puzzle_pieces_v016.leo/JointPieceWinner.record,
         piece_joint_stake: puzzle_pieces_v016.leo/PieceJointStake.record,
         joint_piece_time_claim: puzzle_pieces_v016.leo/JointPieceTimeClaim.record,
-        game_outcome: GameOutcome, // TODO make record in reveal_outcome for finish? 
     ) -> (
         puzzle_pieces_v016.leo/Piece.record,
         puzzle_pieces_v016.leo/AuditTransferToWinner.record,
@@ -948,8 +925,8 @@ program football_game_v013.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        let winner_address: address = game_outcome.goals_home > game_outcome.goals_away ? game_record.challenger_address : game_record.opponent_address;
-        let loser_address: address = game_outcome.goals_home > game_outcome.goals_away ? game_record.opponent_address : game_record.challenger_address;
+        let winner_address: address = joint_piece_winner.winner;
+        let loser_address: address = game_record.challenger_address == joint_piece_winner.winner ? game_record.opponent_address : game_record.challenger_address;
 
         let (piece_record, audit_transfer_to_winner_record, audit_piece_owner): (Piece, AuditTransferToWinner, AuditPieceOwner) = puzzle_pieces_v016.leo/joint_stake_transfer_to_winner(
             joint_piece_winner,
@@ -965,7 +942,7 @@ program football_game_v013.aleo {
             challenger_address: game_record.challenger_address,
             opponent_address: game_record.opponent_address,
             game_multisig: game_record.game_multisig,
-            game_state: 3field,
+            game_state: 6field,
             ix: 0u32,
         };
 
@@ -979,8 +956,7 @@ program football_game_v013.aleo {
             opponent_address: game_record.opponent_address,
             winner: joint_piece_winner.winner,
             loser: loser_address,
-            game_outcome: game_outcome,
-            ix: 10u32,
+            ix: 12u32,
         };
 
         let game_finished_notification_opponent_record: GameFinishedNotification = GameFinishedNotification {
@@ -993,20 +969,10 @@ program football_game_v013.aleo {
             opponent_address: game_record.opponent_address,
             winner: joint_piece_winner.winner,
             loser: loser_address,
-            game_outcome: game_outcome,
-            ix: 10u32,
+            ix: 12u32,
         };
 
-        return (piece_record, audit_transfer_to_winner_record, audit_piece_owner, updated_game_record, game_finished_notification_challenger_record, game_finished_notification_opponent_record)
-        then finalize(game_record.game_multisig, game_record.challenger_address, game_record.opponent_address, game_outcome);
-    }
-
-    finalize finish_game (game_multisig: address, home_address: address, away_address: address, input_outcome: GameOutcome) {
-        // Compare the input outcome to the stored outcome from mapping.
-        let stored_outcome: GameOutcome = Mapping::get(game_outcomes, game_multisig);
-        assert_eq(input_outcome.goals_home, stored_outcome.goals_home);
-        assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
-
+        return (piece_record, audit_transfer_to_winner_record, audit_piece_owner, updated_game_record, game_finished_notification_challenger_record, game_finished_notification_opponent_record);
     }
 
     // called by ms key via opponent to finish the game and get the total pot!
@@ -1037,7 +1003,7 @@ program football_game_v013.aleo {
             challenger_address: game_record.challenger_address,
             opponent_address: game_record.opponent_address,
             game_multisig: game_record.game_multisig,
-            game_state: 3field,
+            game_state: 9field,
             ix: 0u32,
         };
 
@@ -1055,30 +1021,28 @@ program football_game_v013.aleo {
         let game_finished_notification_challenger_record: GameFinishedNotification = GameFinishedNotification {
             owner: game_record.challenger_address,
             game_multisig: game_record.game_multisig,
-            game_state: 7field,
+            game_state: 9field,
             your_turn: false,
             total_pot: game_record.total_pot,
             challenger_address: game_record.challenger_address,
             opponent_address: game_record.opponent_address,
             winner: game_record.opponent_address,
             loser: game_record.challenger_address,
-            game_outcome: game_outcome,
-            ix: 10u32,
+            ix: 12u32,
         };
 
         // Notification to opponent of game finished
         let game_finished_notification_opponent_record: GameFinishedNotification = GameFinishedNotification {
             owner: game_record.opponent_address,
             game_multisig: game_record.game_multisig,
-            game_state: 7field,
+            game_state: 9field,
             your_turn: false,
             total_pot: game_record.total_pot,
             challenger_address: game_record.challenger_address,
             opponent_address: game_record.opponent_address,
             winner: game_record.opponent_address,
             loser: game_record.challenger_address,
-            game_outcome: game_outcome,
-            ix: 10u32,
+            ix: 12u32,
         };
 
         // Payout to winner
