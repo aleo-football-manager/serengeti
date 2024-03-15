@@ -1,5 +1,5 @@
 import puzzle_pieces_v016.leo;
-import football_pvp_utils_v001.leo; //customized for u8 player array instead of field
+import football_pvp_utils_v001.leo; //customized for field array instead of field
 
 program football_game_v014.aleo {
 
