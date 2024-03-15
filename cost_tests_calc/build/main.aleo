@@ -1,53 +1,31 @@
-program cost_tests_calc_v005.aleo;
+program cost_tests_calc_v011.aleo;
 
 
 
-mapping randomness_u8:
-	key as u8.public;
-	value as [u8; 5u32].public;
+function test_random_p_iter:
+    async test_random_p_iter into r0;
+    output r0 as cost_tests_calc_v011.aleo/test_random_p_iter.future;
 
-
-mapping randomness_u32:
-	key as u32.public;
-	value as [u32; 5u32].public;
-
-function random:
-    input r0 as u8.private;
-    async random r0 into r1;
-    output r1 as cost_tests_calc_v005.aleo/random.future;
-
-finalize random:
-    input r0 as u8.public;
-    rand.chacha into r1 as u8;
-    rand.chacha into r2 as u8;
-    rand.chacha into r3 as u8;
-    rand.chacha into r4 as u8;
-    rand.chacha into r5 as u8;
-    cast  r1 r2 r3 r4 r5 into r6 as [u8; 5u32];
-    set r6 into randomness_u8[r0];
-
-
-closure modmod:
-    input r0 as u32;
-    input r1 as u32;
-    input r2 as u32;
-    mod r0 r1 into r3;
-    mod r3 r2 into r4;
-    output r4 as u32;
-
-
-function prandom:
-    input r0 as u32.private;
-    async prandom r0 into r1;
-    output r1 as cost_tests_calc_v005.aleo/prandom.future;
-
-finalize prandom:
-    input r0 as u32.public;
-    rand.chacha into r1 as u32;
-    mod r1 100u32 into r2;
-    call modmod r1 5433452u32 100u32 into r3;
-    call modmod r1 27552u32 100u32 into r4;
-    call modmod r1 15433452u32 100u32 into r5;
-    call modmod r1 92452u32 100u32 into r6;
-    cast  r2 r3 r4 r5 r6 into r7 as [u32; 5u32];
-    set r7 into randomness_u32[r0];
+finalize test_random_p_iter:
+    rand.chacha into r0 as u128;
+    mod r0 160u128 into r1;
+    mod r0 234272u128 into r2;
+    mod r2 100u128 into r3;
+    mod r0 2341272u128 into r4;
+    mod r4 100u128 into r5;
+    mod r0 234234272u128 into r6;
+    mod r6 100u128 into r7;
+    mod r0 91234272u128 into r8;
+    mod r8 100u128 into r9;
+    mod r0 2272u128 into r10;
+    mod r10 100u128 into r11;
+    lt 2429u128 r3 into r12;
+    lt 2329802u128 r5 into r13;
+    lt 21231234u128 r7 into r14;
+    lt 19912912u128 r9 into r15;
+    lt 2272u128 r11 into r16;
+    ternary r16 true false into r17;
+    ternary r15 r17 false into r18;
+    ternary r14 r18 false into r19;
+    ternary r13 r19 false into r20;
+    ternary r12 r20 false into r21;
