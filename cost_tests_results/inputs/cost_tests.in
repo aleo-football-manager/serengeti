@@ -1,0 +1,14 @@
+// The program input for cost_tests/src/main.leo
+[main]
+public player: "{
+  player_id: 200u8,
+  team_id: 200u8,
+  position: 0field,
+  attack: 200u8,
+  defense: 200u8,
+  speed: 200u8,
+  power: 200u8,
+  stamina: 200u8,
+  technique: 200u8,
+  goalkeeping: 200u8
+}";
