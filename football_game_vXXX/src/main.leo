@@ -1,5 +1,5 @@
 import puzzle_pieces_v016.leo;
-import multiparty_pvp_utils_v015_avh.leo; //customized for u8 player array instead of field
+import football_pvp_utils_v001.leo; //customized for u8 player array instead of field
 
 program football_game_v014.aleo {
 
@@ -12,7 +12,7 @@ program football_game_v014.aleo {
 
     // Frontend generates unique id (field) to map gameOutcome.
     mapping game_outcomes: address => GameOutcome;
-    mapping players: u8 => Player;
+    mapping players: field => Player;
 
     transition add_player (player: Player) {
         assert_eq(self.caller, OWNER);
@@ -31,23 +31,23 @@ program football_game_v014.aleo {
     struct GameOutcome {
         address_home: address,
         address_away: address
-        team_id_home: u8,
-        team_id_away: u8,
+        team_id_home: field,
+        team_id_away: field,
         goals_home: u64,
         goals_away: u64,
     }
 
      struct Player {
-        player_id: u8,
-        team_id: u8,
+        player_id: field,
+        team_id: field,
         position: field, // 0 = Emtpy, 1 = Goalkeep, 2 = Defense, 3 = Mid, 4 = Attack
-        attack: u8,
-        defense: u8,
-        speed: u8,
-        power: u8,
-        stamina: u8,
-        technique: u8,
-        goalkeeping: u8,
+        attack: u128,
+        defense: u128,
+        speed: u128,
+        power: u128,
+        stamina: u128,
+        technique: u128,
+        goalkeeping: u128,
     }
 
 
@@ -60,7 +60,7 @@ program football_game_v014.aleo {
     record Game {
         owner: address,
         challenger_commit: field,
-        opponent_answer: [u8; 11],
+        opponent_answer: [field; 11],
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
@@ -179,7 +179,7 @@ program football_game_v014.aleo {
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
-        opponent_answer: [u8; 11],
+        opponent_answer: [field; 11],
         ix: u32,
     }
 
@@ -207,7 +207,7 @@ program football_game_v014.aleo {
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
-        opponent_answer: [u8; 11],
+        opponent_answer: [field; 11],
         ix: u32,
     }
 
@@ -222,8 +222,8 @@ program football_game_v014.aleo {
         total_pot: u64,
         challenger_address: address,
         opponent_address: address,
-        challenger_answer: [u8; 11],
-        opponent_answer: [u8; 11],
+        challenger_answer: [field; 11],
+        opponent_answer: [field; 11],
         winner: address,
         loser: address,
         ix: u32,
@@ -261,7 +261,7 @@ program football_game_v014.aleo {
         challenger_sig: signature, //from output of useSignature
         //multiparty_pvp_utils data
         challenger_nonce: field,
-        challenger_answer: [u8; 11],
+        challenger_answer: [field; 11],
         game_multisig_seed: field, //game_multisig seed to send to user
         //wheres_alex data
     ) -> (
@@ -270,10 +270,10 @@ program football_game_v014.aleo {
         puzzle_pieces_v016.leo/ClaimSignature.record,
         puzzle_pieces_v016.leo/Piece.record,
         puzzle_pieces_v016.leo/AuditStakeIn.record,
-        multiparty_pvp_utils_v015_avh.leo/Answer.record,
-        multiparty_pvp_utils_v015_avh.leo/AuditMintAnswer.record,
-        multiparty_pvp_utils_v015_avh.leo/Key.record,
-        multiparty_pvp_utils_v015_avh.leo/AuditKey.record,
+        football_pvp_utils_v001.leo/Answer.record,
+        football_pvp_utils_v001.leo/AuditMintAnswer.record,
+        football_pvp_utils_v001.leo/Key.record,
+        football_pvp_utils_v001.leo/AuditKey.record,
         Game,
         GameReqNotification,
         WaitingAcceptanceNotification,
@@ -328,7 +328,7 @@ program football_game_v014.aleo {
         ) : (
             Key,
             AuditKey
-        ) = multiparty_pvp_utils_v015_avh.leo/mint_multisig_key(game_multisig_seed,challenger_wager_amount,challenger,opponent,game_multisig);
+        ) = football_pvp_utils_v001.leo/mint_multisig_key(game_multisig_seed,challenger_wager_amount,challenger,opponent,game_multisig);
 
 
         let game_request_notification_record: GameReqNotification = GameReqNotification {
@@ -357,7 +357,7 @@ program football_game_v014.aleo {
         let game_record: Game = Game {
             owner: game_multisig,
             challenger_commit: challenger_commit,
-            opponent_answer: [0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8,0u8], // random field for now until opponent answer in accept_game
+            opponent_answer: [0field,0field,0field,0field,0field,0field,0field,0field,0field,0field,0field], // random field for now until opponent answer in accept_game
             total_pot: challenger_wager_amount + challenger_wager_amount,
             challenger_address: challenger,
             opponent_address: opponent,
@@ -366,7 +366,7 @@ program football_game_v014.aleo {
             ix: 1u32,
         };
 
-        let (challenger_answer_record, audit_mint_answer_record):  (Answer, AuditMintAnswer) = multiparty_pvp_utils_v015_avh.leo/mint_answer(
+        let (challenger_answer_record, audit_mint_answer_record):  (Answer, AuditMintAnswer) = football_pvp_utils_v001.leo/mint_answer(
                 challenger,
                 opponent,
                 game_multisig,
@@ -449,7 +449,7 @@ program football_game_v014.aleo {
 
     transition submit_wager (
         opponent_wager_record: puzzle_pieces_v016.leo/Piece.record,
-        key_record: multiparty_pvp_utils_v015_avh.leo/Key.record,
+        key_record: football_pvp_utils_v001.leo/Key.record,
         game_req_notification: GameReqNotification,
         opponent_message_1: field, //from output of useSignature
         opponent_message_2: field,
@@ -591,7 +591,7 @@ program football_game_v014.aleo {
     transition accept_game
     (
         game_record: Game,
-        opponent_answer: [u8;11],
+        opponent_answer: [field;11],
         piece_stake_challenger: puzzle_pieces_v016.leo/PieceStake.record,
         piece_claim_challenger: puzzle_pieces_v016.leo/PieceClaim.record,
         piece_stake_opponent: puzzle_pieces_v016.leo/PieceStake.record,
@@ -685,7 +685,7 @@ program football_game_v014.aleo {
     finalize accept_game
     (
         block_ht: u32,
-        opponent_answer: [u8; 11],
+        opponent_answer: [field; 11],
     )
     {
         // block every 5 seconds or so
@@ -704,10 +704,10 @@ program football_game_v014.aleo {
     transition calculate_outcome
     (
         reveal_answer_notification_record: RevealAnswerNotification,
-        challenger_answer_record: multiparty_pvp_utils_v015_avh.leo/Answer.record,
+        challenger_answer_record: football_pvp_utils_v001.leo/Answer.record,
     ) 
     -> (
-        multiparty_pvp_utils_v015_avh.leo/Answer.record,
+        football_pvp_utils_v001.leo/Answer.record,
         WaitingCalculationNotification,
         CalculatedOutcomeNotification,
         )
@@ -749,7 +749,7 @@ program football_game_v014.aleo {
             ix: 10u32,
         };
 
-        let challenger_answer: [u8;11] = challenger_answer_record.answer;
+        let challenger_answer: [field;11] = challenger_answer_record.answer;
 
         return (challenger_answer_record, waiting_calculation_notification_record, calculate_outcome_notification_record)
         
@@ -766,8 +766,8 @@ program football_game_v014.aleo {
         game_multisig: address,
         address_home: address,
         address_away: address,
-        home_formation: [u8; 11],
-        away_formation: [u8; 11],
+        home_formation: [field; 11],
+        away_formation: [field; 11],
     ) {
 
 
@@ -787,7 +787,7 @@ program football_game_v014.aleo {
                 home_player = Mapping::get(players, home_formation[i]);
                 away_player = Mapping::get(players, away_formation[i]);
                 
-                let fast: u8 = ChaCha::rand_u8().mod(home_player.speed + away_player.speed); // todo ensure total speed != 0? maybe check speed > 0 in add player
+                let fast: u128 = ChaCha::rand_u128().mod(home_player.speed + away_player.speed); // todo ensure total speed != 0? maybe check speed > 0 in add player
 
                 let home_first: bool = fast < home_player.speed;
                 let attacker: Player = home_first ? home_player : away_player;
@@ -819,8 +819,8 @@ program football_game_v014.aleo {
             }
         }
 
-        let team_id_home: u8 = home_player.team_id;
-        let team_id_away: u8 = home_player.team_id;
+        let team_id_home: field = home_player.team_id;
+        let team_id_away: field = home_player.team_id;
 
         let game_outcome: GameOutcome = GameOutcome {
             address_home,
@@ -838,11 +838,11 @@ program football_game_v014.aleo {
         challenger_claim_signature: puzzle_pieces_v016.leo/ClaimSignature.record,
         calculated_outcome_notification_record: CalculatedOutcomeNotification,
         joint_piece_state: puzzle_pieces_v016.leo/JointPieceState.record,
-        challenger_answer_record: multiparty_pvp_utils_v015_avh.leo/Answer.record,
+        challenger_answer_record: football_pvp_utils_v001.leo/Answer.record,
         game_outcome: GameOutcome,
     ) -> (
-        multiparty_pvp_utils_v015_avh.leo/RevealAnswer.record,
-        multiparty_pvp_utils_v015_avh.leo/AuditRevealAnswer.record,
+        football_pvp_utils_v001.leo/RevealAnswer.record,
+        football_pvp_utils_v001.leo/AuditRevealAnswer.record,
         puzzle_pieces_v016.leo/JointPieceWinner.record,
         puzzle_pieces_v016.leo/AuditJointPieceWinner.record,
         GameFinishReqNotification,
@@ -861,7 +861,7 @@ program football_game_v014.aleo {
         let challenger_sig: signature = challenger_claim_signature.sig;
 
         // retrieve revealedanswer record
-        let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = multiparty_pvp_utils_v015_avh.leo/reveal_answer(challenger_answer_record, challenger_sig);
+        let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = football_pvp_utils_v001.leo/reveal_answer(challenger_answer_record, challenger_sig);
 
         let (joint_piece_winner, audit_joint_piece_winner): (JointPieceWinner, AuditJointPieceWinner) = puzzle_pieces_v016.leo/joint_stake_state_update(joint_piece_state, challenger_claim_signature, winner_address);
 
@@ -1014,8 +1014,8 @@ program football_game_v014.aleo {
         let game_outcome: GameOutcome = GameOutcome {
             address_home: game_record.challenger_address,
             address_away: game_record.opponent_address,
-            team_id_home: 0u8,
-            team_id_away: 0u8,
+            team_id_home: 0field,
+            team_id_away: 0field,
             goals_home: 0u64,
             goals_away: 3u64,
 
