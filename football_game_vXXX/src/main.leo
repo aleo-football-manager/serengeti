@@ -776,51 +776,53 @@ program football_game_v014.aleo {
         let goals_home: u64 = 0u64;
         let goals_away: u64 = 0u64;
 
-        let home_player: Player = Mapping::get(players, home_formation[10u8]);
-        let away_player: Player = Mapping::get(players, away_formation[10u8]);
+        let home_player: Player = Mapping::get(players, home_formation[0u8]);
+        let away_player: Player = Mapping::get(players, away_formation[0u8]);
+        let home_goalkeeper: Player = home_player; // TODO: check if it does not change
+        let away_goalkeeper: Player = away_player;
 
-        let valid_formations: bool = true;
-        
-        if valid_formations {
-            for i: u8 in 1u8..11u8 {
-                // See which team attacks 
-                home_player = Mapping::get(players, home_formation[i]);
-                away_player = Mapping::get(players, away_formation[i]);
-                
-                let fast: u128 = ChaCha::rand_u128().mod(home_player.speed + away_player.speed); // todo ensure total speed != 0? maybe check speed > 0 in add player
+        // TODO: Investigate other game_result structures that are possible with loops
+        for i: u8 in 1u8..11u8 {
+            // See which team attacks 
+            home_player = Mapping::get(players, home_formation[i]);
+            away_player = Mapping::get(players, away_formation[i]);
+            
 
-                let home_first: bool = fast < home_player.speed;
-                let attacker: Player = home_first ? home_player : away_player;
-                let defender: Player = home_first ? away_player : home_player;
-                let goalkeeper: Player = home_first ? Mapping::get(players, away_formation[0u8]) : Mapping::get(players, home_formation[0u8]);
+            let random: u128 = ChaCha::rand_u128();
+            let fast: u128 = random.mod(home_player.speed + away_player.speed); // todo ensure total speed != 0? maybe check speed > 0 in add player
 
-                // // Attacker shoots, attack stat determines if it's on target.
-                // if (attacker.attack > ChaCha::rand_u8()) {
-                //     // Defender blocks, defense stat determines if it's blocked.
-                //     if defender.defense < ChaCha::rand_u8() {
-                //         // Goalkeeper saves, goalkeeping stat determines if it's saved.
-                //         if goalkeeper.goalkeeping < ChaCha::rand_u8() {
-                //             // If not saved, record the goal for attacking team.
-                //             if (home_player.speed < away_player.speed) {
-                //                 goals_away += 1u64;
-                //             } else {
-                //                 goals_home += 1u64;
-                //             }
-                //         }
-                //     }
-                // }
-            }
+            let game_random: u128 = random.mod(1000000000000u128); // TODO check if this value is correct
 
-            // const i: u8 = 1u8;
-            if (home_player.speed < away_player.speed) {
-                goals_away += 1u64;
-            } else {
-                goals_home += 1u64;
+            let home_first: bool = fast < home_player.speed;
+            let attacker: Player = home_first ? home_player : away_player;
+            let defender: Player = home_first ? away_player : home_player;
+            let goalkeeper: Player = home_first ? away_goalkeeper : home_goalkeeper;
+
+            let attack_power: u128 = attacker.attack.mul(attacker.power); // Max 100*100 = 10000
+            let def_strength: u128 = defender.defense.mul(defender.technique); // Max 100*100 = 10000
+
+
+            let probability_of_goal: u128 = attack_power.mul(10000u128.sub(def_strength)).mul(goalkeeper.goalkeeping); // Max 10000 * 10000 = 100000000
+            if probability_of_goal > game_random {
+                // If not saved, record the goal for attacking team.
+                if home_first {
+                    goals_home += 1u64;
+                } else {
+                    goals_away += 1u64;
+                }
             }
         }
 
+        // const i: u8 = 1u8;
+        // TODO: replace byproper function to ensure fairness
+        if (home_player.speed < away_player.speed) {
+            goals_away += 1u64;
+        } else {
+            goals_home += 1u64;
+        }
+
         let team_id_home: field = home_player.team_id;
-        let team_id_away: field = home_player.team_id;
+        let team_id_away: field = away_player.team_id;
 
         let game_outcome: GameOutcome = GameOutcome {
             address_home,
