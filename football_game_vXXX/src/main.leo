@@ -778,7 +778,7 @@ program football_game_v014.aleo {
 
         let home_player: Player = Mapping::get(players, home_formation[0u8]);
         let away_player: Player = Mapping::get(players, away_formation[0u8]);
-        let home_goalkeeper: Player = home_player; // TODO: check if it does not change
+        let home_goalkeeper: Player = home_player;
         let away_goalkeeper: Player = away_player;
 
         // TODO: Investigate other game_result structures that are possible with loops
@@ -790,35 +790,37 @@ program football_game_v014.aleo {
 
             let random: u128 = ChaCha::rand_u128();
             let fast: u128 = random.mod(home_player.speed + away_player.speed); // todo ensure total speed != 0? maybe check speed > 0 in add player
-
-            let game_random: u128 = random.mod(1000000000000u128); // TODO check if this value is correct
-
+            let game_random_attack: u128 = random.mod(234272u128).mod(300u128); // TODO check if these mod values are correct
+            let game_random_defend: u128 = random.mod(2341272u128).mod(100u128);
+            let game_random_goalkeep: u128 = random.mod(234234272u128).mod(100u128);
             let home_first: bool = fast < home_player.speed;
             let attacker: Player = home_first ? home_player : away_player;
             let defender: Player = home_first ? away_player : home_player;
             let goalkeeper: Player = home_first ? away_goalkeeper : home_goalkeeper;
 
-            let attack_power: u128 = attacker.attack.mul(attacker.power); // Max 100*100 = 10000
-            let def_strength: u128 = defender.defense.mul(defender.technique); // Max 100*100 = 10000
+            let attack_power: u128 = attacker.attack + attacker.power + defender.technique;
 
-
-            let probability_of_goal: u128 = attack_power.mul(10000u128.sub(def_strength)).mul(goalkeeper.goalkeeping); // Max 10000 * 10000 = 100000000
-            if probability_of_goal > game_random {
-                // If not saved, record the goal for attacking team.
-                if home_first {
-                    goals_home += 1u64;
-                } else {
-                    goals_away += 1u64;
+            if attack_power > game_random_attack {
+                if defender.defense < game_random_defend {
+                    if goalkeeper.goalkeeping < game_random_goalkeep {
+                        if home_first {
+                            goals_home = goals_home + 1u64;
+                        } else {
+                            goals_away = goals_away + 1u64;
+                        }
+                    }
                 }
             }
         }
 
         // const i: u8 = 1u8;
-        // TODO: replace byproper function to ensure fairness
-        if (home_player.speed < away_player.speed) {
-            goals_away += 1u64;
-        } else {
-            goals_home += 1u64;
+        // TODO: remove when draws are possible
+        if goals_home.eq(goals_away) {
+            if (ChaCha::rand_bool()) {
+                goals_away += 1u64;
+            } else {
+                goals_home += 1u64;
+            }
         }
 
         let team_id_home: field = home_player.team_id;
