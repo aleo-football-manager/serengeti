@@ -21,7 +21,7 @@ df = pd.read_csv(csv_file_path)
 for index, row in df.iterrows():
     # Constructing the CLI command
     cli_command = (
-        f"snarkos developer execute \"cost_tests_calc_v006.aleo\" \"add_player\" "
+        f"snarkos developer execute \"cost_tests_calc_v014.aleo\" \"add_player\" "
         f"\"{{player_id: {row['player_uid']}field,team_id: {row['team_id']}field,position: {row['position']}field,"
         f"attack: {row['attack']}u128,defense: {row['defense']}u128,speed: {row['speed']}u128,"
         f"power: {row['power']}u128,stamina: {row['stamina']}u128,technique: {row['technique']}u128,"
