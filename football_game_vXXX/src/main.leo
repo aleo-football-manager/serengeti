@@ -614,8 +614,6 @@ program football_game_v014.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        // TODO: assert that usder 1s answer is a valid formation
-
         let (
             piece_joint_stake,
             joint_piece_time_claim,
@@ -719,9 +717,6 @@ program football_game_v014.aleo {
 
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
-
-// TODO create record for opponent also
-
 
         // sent to opponent on calculate_outcome
         let waiting_calculation_notification_record: WaitingCalculationNotification = WaitingCalculationNotification {
