@@ -1,4 +1,4 @@
-program puzzle_pieces_v015.aleo;
+program puzzle_pieces_v016_avh.aleo;
 
 struct Message:
     field_1 as field;
@@ -15,6 +15,12 @@ record Piece:
 record AuditMint:
     owner as address.private;
     minter as address.private;
+    amount as u64.private;
+    ix as u32.private;
+
+record AuditJoin:
+    owner as address.private;
+    joiner as address.private;
     amount as u64.private;
     ix as u32.private;
 
@@ -174,6 +180,26 @@ function mint_private:
     output r3 as AuditMint.record;
 
 
+function join_pieces:
+    input r0 as Piece.record;
+    input r1 as Piece.record;
+    assert.eq self.caller self.signer;
+    is.eq r0.owner self.signer into r2;
+    assert.eq r2 true;
+    is.eq r1.owner self.signer into r3;
+    assert.eq r3 true;
+    gt r0.amount 0u64 into r4;
+    assert.eq r4 true;
+    gt r1.amount 0u64 into r5;
+    assert.eq r5 true;
+    add r0.amount r1.amount into r6;
+    cast self.signer r6 0u32 into r7 as Piece.record;
+    add r0.amount r1.amount into r8;
+    cast aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls self.signer r8 32u32 into r9 as AuditJoin.record;
+    output r7 as Piece.record;
+    output r9 as AuditJoin.record;
+
+
 function transfer_private:
     input r0 as Piece.record;
     input r1 as address.private;
@@ -309,34 +335,25 @@ function joint_stake_state_update:
 function joint_stake_state_update_draw:
     input r0 as JointPieceState.record;
     input r1 as ClaimSignature.record;
-    input r2 as address.private;
     assert.eq r0.owner r1.owner;
     assert.eq r0.state_updater_address r1.owner;
     assert.eq r0.state_updater_address r1.challenger;
-    add r1.amount r1.amount into r3;
-    assert.eq r0.amount r3;
+    add r1.amount r1.amount into r2;
+    assert.eq r0.amount r2;
     assert.eq r0.opponent r1.opponent;
     assert.eq r0.game_multisig r0.game_multisig;
-    cast r0.message_1 r0.message_2 r0.message_3 r0.message_4 r0.message_5 into r4 as Message;
-    sign.verify r1.sig r0.state_updater_address r4 into r5;
-    assert.eq true r5;
-    is.eq r2 r0.challenger into r6;
-    not r6 into r7;
-    is.eq r2 r0.challenger into r8;
-    or r7 r8 into r9;
-    assert.eq r9 true;
-    not r6 into r10;
-    not r10 into r11;
-    is.eq r2 r0.opponent into r12;
-    or r11 r12 into r13;
-    assert.eq r13 true;
-    cast r0.game_multisig r0.amount r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.challenger 12u32 into r14 as JointPieceWinner.record;
-    cast r0.game_multisig r0.amount r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.opponent 12u32 into r15 as JointPieceWinner.record;
-    cast r0.game_multisig r0.amount r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r2 13u32 into r16 as AuditJointPieceWinner.record;
-    output r14 as JointPieceWinner.record;
-    output r16 as AuditJointPieceWinner.record;
-    output r15 as JointPieceWinner.record;
-    output r16 as AuditJointPieceWinner.record;
+    cast r0.message_1 r0.message_2 r0.message_3 r0.message_4 r0.message_5 into r3 as Message;
+    sign.verify r1.sig r0.state_updater_address r3 into r4;
+    assert.eq true r4;
+    div r0.amount 2u64 into r5;
+    cast r0.game_multisig r5 r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.challenger 12u32 into r6 as JointPieceWinner.record;
+    cast r0.game_multisig r5 r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.challenger 13u32 into r7 as AuditJointPieceWinner.record;
+    cast r0.game_multisig r5 r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.challenger 12u32 into r8 as JointPieceWinner.record;
+    cast r0.game_multisig r5 r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.challenger 13u32 into r9 as AuditJointPieceWinner.record;
+    output r6 as JointPieceWinner.record;
+    output r7 as AuditJointPieceWinner.record;
+    output r8 as JointPieceWinner.record;
+    output r9 as AuditJointPieceWinner.record;
 
 
 function joint_stake_transfer_to_winner:

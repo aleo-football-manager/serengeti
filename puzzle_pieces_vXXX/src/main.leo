@@ -1,7 +1,7 @@
 // The 'puzzle_pieces_v016' program.
 // Without nested imports -- puzzle pieces is going to need Piece Keepers to enforce
 
-program puzzle_pieces_v016.aleo {
+program puzzle_pieces_v016_avh.aleo {
     mapping supply: field => u64;
 
     struct Message {
@@ -659,6 +659,116 @@ program puzzle_pieces_v016.aleo {
         return (joint_piece_winner, audit_record);
     }
 
+
+    // Challenger calls this function with the challenger key
+    // after revealing answer in case of a draw. Similar to 
+    // joint_stake_state_update but two winner records
+    //
+    // This call is nested inside Reveal Answer in where's alex game
+    //
+    // Burns their claim signature record here
+    transition joint_stake_state_update_draw (
+        joint_piece_state: JointPieceState,
+        sig: ClaimSignature
+    ) -> (JointPieceWinner, AuditJointPieceWinner, JointPieceWinner, AuditJointPieceWinner) {
+        // set puzzle issuing address as issuer:
+        let puzzle_issuer: address = aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls;
+
+        // 0. Check that owner matches
+        assert_eq(joint_piece_state.owner, sig.owner);
+
+        // 1. Check that owner is the one allowed to udpate state
+        assert_eq(joint_piece_state.state_updater_address,sig.owner);
+        assert_eq(joint_piece_state.state_updater_address,sig.challenger);
+
+        // 2. Check the rest of the details of the game
+        assert_eq(joint_piece_state.amount, sig.amount + sig.amount );
+        assert_eq(joint_piece_state.opponent,sig.opponent);
+        assert_eq(joint_piece_state.game_multisig,joint_piece_state.game_multisig);
+
+        // 3. Check Claimer has verified this with a signature against the message from beginning
+        let msg: Message = Message {
+            field_1: joint_piece_state.message_1,
+            field_2: joint_piece_state.message_2,
+            field_3: joint_piece_state.message_3,
+            field_4: joint_piece_state.message_4,
+            field_5: joint_piece_state.message_5
+        };
+
+        let sign: signature = sig.sig;
+        let signature_check: bool = true;
+        let is_valid_sig: bool = sign.verify(joint_piece_state.state_updater_address, msg);
+        assert_eq(signature_check,is_valid_sig);
+
+        // The logic for the answer and computing winner is in wheres_alex program
+        // The enforcement to prevent the challenger calling this function without going through
+        // where's alex is via the Piece Keepers
+        //
+        // Logic is if a piece keeper sees that there is an address that is different from the answer record for the game,
+        // then can submit to public mapping then person can not spend pieces again. Also lets you mint their amount
+        // You also get a receipt to mint more pieces that you see their address has -- maybe?
+        //
+        // Just a simple check here to verify it's an opponent or challenger
+        // check that sender is either challenger or opponent
+
+        // TODO check if the game is actually a draw
+
+        let draw_amount: u64 = joint_piece_state.amount / 2u64 ;
+
+        let joint_piece_challenger: JointPieceWinner = JointPieceWinner {
+            owner: joint_piece_state.game_multisig,
+            amount: draw_amount,
+            time_claimer_address: joint_piece_state.time_claimer_address,
+            state_updater_address: joint_piece_state.state_updater_address,
+            challenger: joint_piece_state.challenger,
+            opponent: joint_piece_state.opponent,
+            game_multisig: joint_piece_state.game_multisig,
+            winner: joint_piece_state.challenger,
+            ix: 12u32,
+        };
+
+        // for the piece keepers
+        let audit_record_challenger: AuditJointPieceWinner = AuditJointPieceWinner {
+            owner: joint_piece_state.game_multisig,
+            amount: draw_amount,
+            time_claimer_address: joint_piece_state.time_claimer_address,
+            state_updater_address: joint_piece_state.state_updater_address,
+            challenger: joint_piece_state.challenger,
+            opponent: joint_piece_state.opponent,
+            game_multisig: joint_piece_state.game_multisig,
+            winner: joint_piece_state.challenger,
+            ix: 13u32,
+        };
+
+        let joint_piece_opponent: JointPieceWinner = JointPieceWinner {
+            owner: joint_piece_state.game_multisig,
+            amount: draw_amount,
+            time_claimer_address: joint_piece_state.time_claimer_address,
+            state_updater_address: joint_piece_state.state_updater_address,
+            challenger: joint_piece_state.challenger,
+            opponent: joint_piece_state.opponent,
+            game_multisig: joint_piece_state.game_multisig,
+            winner: joint_piece_state.challenger,
+            ix: 12u32,
+        };
+
+        // for the piece keepers
+        let audit_record_opponent: AuditJointPieceWinner = AuditJointPieceWinner {
+            owner: joint_piece_state.game_multisig,
+            amount: draw_amount,
+            time_claimer_address: joint_piece_state.time_claimer_address,
+            state_updater_address: joint_piece_state.state_updater_address,
+            challenger: joint_piece_state.challenger,
+            opponent: joint_piece_state.opponent,
+            game_multisig: joint_piece_state.game_multisig,
+            winner: joint_piece_state.challenger,
+            ix: 13u32,
+        };
+
+        return (joint_piece_challenger, audit_record_challenger, joint_piece_opponent, audit_record_opponent);
+    }
+
+
     // Called with multisig key
     // Any multisig member calls this function to end the game and transfer the pieces
     transition joint_stake_transfer_to_winner(
@@ -723,6 +833,7 @@ program puzzle_pieces_v016.aleo {
 
         return (piece_to_winner, audit_record, audit_piece_owner);
     }
+
 
     // The challenger has not updated joint piece state for a winner in time of blockheight
     // This is an auto-win for the opponent
