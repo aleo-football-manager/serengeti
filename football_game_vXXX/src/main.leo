@@ -1,7 +1,7 @@
-import puzzle_pieces_v016.leo;
+import football_coins_v001.leo;
 import football_pvp_utils_v001.leo; //customized for field array instead of field
 
-program football_game_v014.aleo {
+program football_game_v015.aleo {
 
     /////////////////////////////
     // MAPPING                 //
@@ -247,7 +247,7 @@ program football_game_v014.aleo {
     // New propose game
     transition propose_game (
         //puzzle_pieces.stake_transfer_in() data
-        wager_record: puzzle_pieces_v016.leo/Piece.record,
+        wager_record: football_coins_v001.leo/Piece.record,
         challenger_wager_amount: u64,
         sender: address, // Challenger address proposing game
         challenger: address,
@@ -265,11 +265,11 @@ program football_game_v014.aleo {
         game_multisig_seed: field, //game_multisig seed to send to user
         //wheres_alex data
     ) -> (
-        puzzle_pieces_v016.leo/PieceClaim.record,
-        puzzle_pieces_v016.leo/PieceStake.record,
-        puzzle_pieces_v016.leo/ClaimSignature.record,
-        puzzle_pieces_v016.leo/Piece.record,
-        puzzle_pieces_v016.leo/AuditStakeIn.record,
+        football_coins_v001.leo/PieceClaim.record,
+        football_coins_v001.leo/PieceStake.record,
+        football_coins_v001.leo/ClaimSignature.record,
+        football_coins_v001.leo/Piece.record,
+        football_coins_v001.leo/AuditStakeIn.record,
         football_pvp_utils_v001.leo/Answer.record,
         football_pvp_utils_v001.leo/AuditMintAnswer.record,
         football_pvp_utils_v001.leo/Key.record,
@@ -307,7 +307,7 @@ program football_game_v014.aleo {
             ClaimSignature,
             Piece,
             AuditStakeIn
-        ) = puzzle_pieces_v016.leo/stake_transfer_in(
+        ) = football_coins_v001.leo/stake_transfer_in(
             wager_record,
             sender,
             challenger,
@@ -403,12 +403,12 @@ program football_game_v014.aleo {
     transition challenger_renege_stake
     (
         waiting_accept_game_notification: WaitingAcceptanceNotification,
-        piece_stake_challenger: puzzle_pieces_v016.leo/PieceStake.record,
-        piece_claim_challenger: puzzle_pieces_v016.leo/PieceClaim.record,
+        piece_stake_challenger: football_coins_v001.leo/PieceStake.record,
+        piece_claim_challenger: football_coins_v001.leo/PieceClaim.record,
         challenger_sig: signature,
     ) -> (
-        puzzle_pieces_v016.leo/Piece.record,
-        puzzle_pieces_v016.leo/AuditStakeOut.record,
+        football_coins_v001.leo/Piece.record,
+        football_coins_v001.leo/AuditStakeOut.record,
         StakeRenegedNotification,
         StakeRenegedNotification,
         )
@@ -416,7 +416,7 @@ program football_game_v014.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = puzzle_pieces_v016.leo/stake_transfer_out(piece_stake_challenger, piece_claim_challenger, challenger_sig);
+        let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = football_coins_v001.leo/stake_transfer_out(piece_stake_challenger, piece_claim_challenger, challenger_sig);
 
         let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
             owner: waiting_accept_game_notification.challenger_address, //opponent
@@ -448,7 +448,7 @@ program football_game_v014.aleo {
     }
 
     transition submit_wager (
-        opponent_wager_record: puzzle_pieces_v016.leo/Piece.record,
+        opponent_wager_record: football_coins_v001.leo/Piece.record,
         key_record: football_pvp_utils_v001.leo/Key.record,
         game_req_notification: GameReqNotification,
         opponent_message_1: field, //from output of useSignature
@@ -458,11 +458,11 @@ program football_game_v014.aleo {
         opponent_message_5: field,
         opponent_sig: signature, //from output of useSignature
     ) -> (
-        puzzle_pieces_v016.leo/PieceClaim.record,
-        puzzle_pieces_v016.leo/PieceStake.record,
-        puzzle_pieces_v016.leo/ClaimSignature.record,
-        puzzle_pieces_v016.leo/Piece.record,
-        puzzle_pieces_v016.leo/AuditStakeIn.record,
+        football_coins_v001.leo/PieceClaim.record,
+        football_coins_v001.leo/PieceStake.record,
+        football_coins_v001.leo/ClaimSignature.record,
+        football_coins_v001.leo/Piece.record,
+        football_coins_v001.leo/AuditStakeIn.record,
         ChallengerWagerNotification,
         OpponentWagerNotification,
     )
@@ -489,7 +489,7 @@ program football_game_v014.aleo {
             ClaimSignature,
             Piece,
             AuditStakeIn
-        ) = puzzle_pieces_v016.leo/stake_transfer_in(
+        ) = football_coins_v001.leo/stake_transfer_in(
             opponent_wager_record,
             game_req_notification.opponent_address, // sender
             game_req_notification.challenger_address, // challenger
@@ -543,12 +543,12 @@ program football_game_v014.aleo {
     transition opponent_renege_stake
     (
         waiting_accept_game_notification: WaitingAcceptanceNotification,
-        piece_stake_opponent: puzzle_pieces_v016.leo/PieceStake.record,
-        piece_claim_opponent: puzzle_pieces_v016.leo/PieceClaim.record,
+        piece_stake_opponent: football_coins_v001.leo/PieceStake.record,
+        piece_claim_opponent: football_coins_v001.leo/PieceClaim.record,
         opponent_sig: signature,
     ) -> (
-        puzzle_pieces_v016.leo/Piece.record,
-        puzzle_pieces_v016.leo/AuditStakeOut.record,
+        football_coins_v001.leo/Piece.record,
+        football_coins_v001.leo/AuditStakeOut.record,
         StakeRenegedNotification,
         StakeRenegedNotification,
         )
@@ -556,7 +556,7 @@ program football_game_v014.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
-        let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = puzzle_pieces_v016.leo/stake_transfer_out(piece_stake_opponent, piece_claim_opponent, opponent_sig);
+        let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = football_coins_v001.leo/stake_transfer_out(piece_stake_opponent, piece_claim_opponent, opponent_sig);
 
         let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
             owner: waiting_accept_game_notification.challenger_address, //opponent
@@ -592,16 +592,16 @@ program football_game_v014.aleo {
     (
         game_record: Game,
         opponent_answer: [field;11],
-        piece_stake_challenger: puzzle_pieces_v016.leo/PieceStake.record,
-        piece_claim_challenger: puzzle_pieces_v016.leo/PieceClaim.record,
-        piece_stake_opponent: puzzle_pieces_v016.leo/PieceStake.record,
-        piece_claim_opponent: puzzle_pieces_v016.leo/PieceClaim.record,
+        piece_stake_challenger: football_coins_v001.leo/PieceStake.record,
+        piece_claim_challenger: football_coins_v001.leo/PieceClaim.record,
+        piece_stake_opponent: football_coins_v001.leo/PieceStake.record,
+        piece_claim_opponent: football_coins_v001.leo/PieceClaim.record,
         block_ht: u32,
     ) -> (
-        puzzle_pieces_v016.leo/PieceJointStake.record,
-        puzzle_pieces_v016.leo/JointPieceTimeClaim.record,
-        puzzle_pieces_v016.leo/JointPieceState.record,
-        puzzle_pieces_v016.leo/AuditJointStake.record,
+        football_coins_v001.leo/PieceJointStake.record,
+        football_coins_v001.leo/JointPieceTimeClaim.record,
+        football_coins_v001.leo/JointPieceState.record,
+        football_coins_v001.leo/AuditJointStake.record,
         WaitingRevealNotification,
         RevealAnswerNotification,
         Game,
@@ -624,7 +624,7 @@ program football_game_v014.aleo {
             JointPieceTimeClaim,
             JointPieceState,
             AuditJointStake
-        ) = puzzle_pieces_v016.leo/transfer_stakes_to_joint(
+        ) = football_coins_v001.leo/transfer_stakes_to_joint(
             piece_stake_challenger,
             piece_claim_challenger,
             piece_stake_opponent,
@@ -765,9 +765,10 @@ program football_game_v014.aleo {
         away_formation: [field; 11],
     ) {
 
+        // TODO
 
         // In case of 1 invalid formation: Payout other player.
-        // 2 valid formations > ?? (draw is not yet implemented)
+        // 2 in valid formations >  draw result
         let goals_home: u64 = 0u64;
         let goals_away: u64 = 0u64;
 
@@ -834,16 +835,16 @@ program football_game_v014.aleo {
     }
 
     transition reveal_answer_game (
-        challenger_claim_signature: puzzle_pieces_v016.leo/ClaimSignature.record,
+        challenger_claim_signature: football_coins_v001.leo/ClaimSignature.record,
         calculated_outcome_notification_record: CalculatedOutcomeNotification,
-        joint_piece_state: puzzle_pieces_v016.leo/JointPieceState.record,
+        joint_piece_state: football_coins_v001.leo/JointPieceState.record,
         challenger_answer_record: football_pvp_utils_v001.leo/Answer.record,
         game_outcome: GameOutcome,
     ) -> (
         football_pvp_utils_v001.leo/RevealAnswer.record,
         football_pvp_utils_v001.leo/AuditRevealAnswer.record,
-        puzzle_pieces_v016.leo/JointPieceWinner.record,
-        puzzle_pieces_v016.leo/AuditJointPieceWinner.record,
+        football_coins_v001.leo/JointPieceWinner.record,
+        football_coins_v001.leo/AuditJointPieceWinner.record,
         GameFinishReqNotification,
         GameFinishReqNotification,)
     {
@@ -854,15 +855,19 @@ program football_game_v014.aleo {
         // assert contracts can't call this
         assert_eq(self.caller, self.signer);
 
+        // Not available for draw game, draws use transition reveal_answer_game_draw instead
+        assert_neq(game_outcome.goals_home, game_outcome.goals_away);
+
+
         // determine winner! If opponent correctly picked where the challenger hid alex, the opponent wins otherwise the challenger wins
-        let winner_address: address = calculated_outcome_notification_record.opponent_answer == challenger_answer_record.answer ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
-        let loser_address: address = winner_address == challenger_answer_record.challenger_address ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
+        let winner_address: address = game_outcome.goals_home > game_outcome.goals_away ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
+        let loser_address: address = game_outcome.goals_home < game_outcome.goals_away ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
         let challenger_sig: signature = challenger_claim_signature.sig;
 
         // retrieve revealedanswer record
         let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = football_pvp_utils_v001.leo/reveal_answer(challenger_answer_record, challenger_sig);
 
-        let (joint_piece_winner, audit_joint_piece_winner): (JointPieceWinner, AuditJointPieceWinner) = puzzle_pieces_v016.leo/joint_stake_state_update(joint_piece_state, challenger_claim_signature, winner_address);
+        let (joint_piece_winner, audit_joint_piece_winner): (JointPieceWinner, AuditJointPieceWinner) = football_coins_v001.leo/joint_stake_state_update(joint_piece_state, challenger_claim_signature, winner_address);
 
 
         let game_finish_req_notification_record_opponent: GameFinishReqNotification = GameFinishReqNotification {
@@ -906,17 +911,93 @@ program football_game_v014.aleo {
         assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
     }
 
+
+    transition reveal_answer_game_draw (
+        challenger_claim_signature: football_coins_v001.leo/ClaimSignature.record,
+        calculated_outcome_notification_record: CalculatedOutcomeNotification,
+        joint_piece_state: football_coins_v001.leo/JointPieceState.record,
+        challenger_answer_record: football_pvp_utils_v001.leo/Answer.record,
+        game_outcome: GameOutcome,
+    ) -> (
+        football_pvp_utils_v001.leo/RevealAnswer.record,
+        football_pvp_utils_v001.leo/AuditRevealAnswer.record,
+        football_coins_v001.leo/JointPieceWinner.record,
+        football_coins_v001.leo/AuditJointPieceWinner.record,
+        football_coins_v001.leo/JointPieceWinner.record,
+        football_coins_v001.leo/AuditJointPieceWinner.record,
+        GameFinishReqNotification,
+        GameFinishReqNotification,)
+    {
+    // // assert that the correct state updater address is the challenger and the challenger
+        // is invoking this
+        assert_eq(joint_piece_state.state_updater_address, self.signer);
+
+        // assert contracts can't call this
+        assert_eq(self.caller, self.signer);
+
+        assert_eq(game_outcome.goals_home, game_outcome.goals_away);
+
+        let challenger_sig: signature = challenger_claim_signature.sig;
+
+        // retrieve revealedanswer record
+        let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = football_pvp_utils_v001.leo/reveal_answer(challenger_answer_record, challenger_sig);
+
+        let (joint_piece_challenger, audit_joint_piece_challenger, joint_piece_opponent, audit_joint_piece_opponent): (JointPieceWinner, AuditJointPieceWinner, JointPieceWinner, AuditJointPieceWinner) = football_coins_v001.leo/joint_stake_state_update_draw(joint_piece_state, challenger_claim_signature);
+
+
+        let game_finish_req_notification_record_opponent: GameFinishReqNotification = GameFinishReqNotification {
+            owner: challenger_answer_record.opponent_address,
+            game_multisig: challenger_answer_record.game_multisig,
+            game_state: 5field,
+            your_turn: true,
+            total_pot: joint_piece_state.amount,
+            challenger_address: challenger_answer_record.challenger_address,
+            opponent_address: challenger_answer_record.opponent_address,
+            challenger_answer: challenger_answer_record.answer,
+            opponent_answer: calculated_outcome_notification_record.opponent_answer,
+            winner: challenger_answer_record.game_multisig,
+            loser: challenger_answer_record.game_multisig,
+            ix: 11u32,
+        };
+
+        let game_finish_req_notification_record_challenger: GameFinishReqNotification = GameFinishReqNotification{
+            owner: challenger_answer_record.challenger_address,
+            game_multisig: challenger_answer_record.game_multisig,
+            game_state: 5field,
+            your_turn: true,
+            total_pot: joint_piece_state.amount,
+            challenger_address: challenger_answer_record.challenger_address,
+            opponent_address: challenger_answer_record.opponent_address,
+            challenger_answer: challenger_answer_record.answer,
+            opponent_answer: calculated_outcome_notification_record.opponent_answer,
+            winner: challenger_answer_record.game_multisig,
+            loser: challenger_answer_record.game_multisig,
+            ix: 11u32,
+        };
+    
+        return (revealed_answer_record, audit_revealed_answer_record, joint_piece_challenger, audit_joint_piece_challenger, joint_piece_opponent, audit_joint_piece_opponent, game_finish_req_notification_record_opponent, game_finish_req_notification_record_challenger)
+        then finalize (calculated_outcome_notification_record.game_multisig, game_outcome);
+    }
+
+    finalize reveal_answer_game_draw (game_multisig: address, input_outcome: GameOutcome) {
+        // Compare the input outcome to the stored outcome from mapping.
+        let stored_outcome: GameOutcome = Mapping::get(game_outcomes, game_multisig);
+        assert_eq(input_outcome.goals_home, stored_outcome.goals_home);
+        assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
+    }
+
+
     // called by ms key to finish the game and get the total pot!
     transition finish_game
     (
         game_record: Game,
-        joint_piece_winner: puzzle_pieces_v016.leo/JointPieceWinner.record,
-        piece_joint_stake: puzzle_pieces_v016.leo/PieceJointStake.record,
-        joint_piece_time_claim: puzzle_pieces_v016.leo/JointPieceTimeClaim.record,
+        joint_piece_winner: football_coins_v001.leo/JointPieceWinner.record,
+        piece_joint_stake: football_coins_v001.leo/PieceJointStake.record,
+        joint_piece_time_claim: football_coins_v001.leo/JointPieceTimeClaim.record,
     ) -> (
-        puzzle_pieces_v016.leo/Piece.record,
-        puzzle_pieces_v016.leo/AuditTransferToWinner.record,
-        puzzle_pieces_v016.leo/AuditPieceOwner.record,
+        football_coins_v001.leo/Piece.record,
+        football_coins_v001.leo/AuditTransferToWinner.record,
+        football_coins_v001.leo/AuditPieceOwner.record,
         Game,
         GameFinishedNotification,
         GameFinishedNotification)
@@ -931,7 +1012,7 @@ program football_game_v014.aleo {
         let winner_address: address = joint_piece_winner.winner;
         let loser_address: address = game_record.challenger_address == joint_piece_winner.winner ? game_record.opponent_address : game_record.challenger_address;
 
-        let (piece_record, audit_transfer_to_winner_record, audit_piece_owner): (Piece, AuditTransferToWinner, AuditPieceOwner) = puzzle_pieces_v016.leo/joint_stake_transfer_to_winner(
+        let (piece_record, audit_transfer_to_winner_record, audit_piece_owner): (Piece, AuditTransferToWinner, AuditPieceOwner) = football_coins_v001.leo/joint_stake_transfer_to_winner(
             joint_piece_winner,
             piece_joint_stake,
             joint_piece_time_claim,
@@ -981,12 +1062,12 @@ program football_game_v014.aleo {
     // called by ms key via opponent to finish the game and get the total pot!
     transition finish_game_by_timeout(
         game_record: Game,
-        piece_joint_stake: puzzle_pieces_v016.leo/PieceJointStake.record,
-        joint_piece_time_claim: puzzle_pieces_v016.leo/JointPieceTimeClaim.record,
+        piece_joint_stake: football_coins_v001.leo/PieceJointStake.record,
+        joint_piece_time_claim: football_coins_v001.leo/JointPieceTimeClaim.record,
         sig: signature, // use from ClaimSignature record on FE, can't consume in this fxn bc claim is owned by multisig
     ) -> (
-        puzzle_pieces_v016.leo/Piece.record,
-        puzzle_pieces_v016.leo/AuditTransferToWinner.record,
+        football_coins_v001.leo/Piece.record,
+        football_coins_v001.leo/AuditTransferToWinner.record,
         Game,
         GameFinishedNotification,
         GameFinishedNotification)
@@ -1049,7 +1130,7 @@ program football_game_v014.aleo {
         };
 
         // Payout to winner
-        let (piece_record_winner, audit_transfer_to_winner_record): (Piece, AuditTransferToWinner) = puzzle_pieces_v016.leo/joint_timeout_to_opponent(piece_joint_stake, joint_piece_time_claim, sig);
+        let (piece_record_winner, audit_transfer_to_winner_record): (Piece, AuditTransferToWinner) = football_coins_v001.leo/joint_timeout_to_opponent(piece_joint_stake, joint_piece_time_claim, sig);
 
         return (
             piece_record_winner,
