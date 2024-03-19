@@ -766,7 +766,6 @@ program football_game_v015.aleo {
     ) {
 
         // TODO
-
         // In case of 1 invalid formation: Payout other player.
         // 2 in valid formations >  draw result
         let goals_home: u64 = 0u64;
@@ -806,16 +805,6 @@ program football_game_v015.aleo {
                         }
                     }
                 }
-            }
-        }
-
-        // const i: u8 = 1u8;
-        // TODO: remove when draws are possible
-        if goals_home.eq(goals_away) {
-            if (ChaCha::rand_bool()) {
-                goals_away += 1u64;
-            } else {
-                goals_home += 1u64;
             }
         }
 
