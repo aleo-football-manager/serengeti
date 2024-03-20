@@ -1,7 +1,7 @@
 import football_coins_v001.leo;
 import football_pvp_utils_v001.leo; //customized for field array instead of field
 
-program football_game_v015b.aleo {
+program football_game_v015.aleo {
 
     /////////////////////////////
     // MAPPING                 //
@@ -845,8 +845,7 @@ program football_game_v015b.aleo {
         assert_eq(self.caller, self.signer);
 
         // Not available for draw game, draws use transition reveal_answer_game_draw instead
-        // assert_neq(game_outcome.goals_home, game_outcome.goals_away);
-
+        assert_neq(game_outcome.goals_home, game_outcome.goals_away);
 
         // determine winner! If opponent correctly picked where the challenger hid alex, the opponent wins otherwise the challenger wins
         let winner_address: address = game_outcome.goals_home > game_outcome.goals_away ? challenger_answer_record.opponent_address : challenger_answer_record.challenger_address;
@@ -857,7 +856,6 @@ program football_game_v015b.aleo {
         let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = football_pvp_utils_v001.leo/reveal_answer(challenger_answer_record, challenger_sig);
 
         let (joint_piece_winner, audit_joint_piece_winner): (JointPieceWinner, AuditJointPieceWinner) = football_coins_v001.leo/joint_stake_state_update(joint_piece_state, challenger_claim_signature, winner_address);
-
 
         let game_finish_req_notification_record_opponent: GameFinishReqNotification = GameFinishReqNotification {
             owner: challenger_answer_record.opponent_address,
@@ -899,6 +897,80 @@ program football_game_v015b.aleo {
         assert_eq(input_outcome.goals_home, stored_outcome.goals_home);
         assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
     }
+
+    transition reveal_answer_game_draw (
+        challenger_claim_signature: football_coins_v001.leo/ClaimSignature.record,
+        calculated_outcome_notification_record: CalculatedOutcomeNotification,
+        joint_piece_state: football_coins_v001.leo/JointPieceState.record,
+        challenger_answer_record: football_pvp_utils_v001.leo/Answer.record,
+        game_outcome: GameOutcome,
+    ) -> (
+        football_pvp_utils_v001.leo/RevealAnswer.record,
+        football_pvp_utils_v001.leo/AuditRevealAnswer.record,
+        football_coins_v001.leo/JointPieceWinner.record,
+        football_coins_v001.leo/AuditJointPieceWinner.record,
+        football_coins_v001.leo/JointPieceWinner.record,
+        football_coins_v001.leo/AuditJointPieceWinner.record,
+        GameFinishReqNotification,
+        GameFinishReqNotification,)
+    {
+    // // assert that the correct state updater address is the challenger and the challenger
+        // is invoking this
+        assert_eq(joint_piece_state.state_updater_address, self.signer);
+
+        // assert contracts can't call this
+        assert_eq(self.caller, self.signer);
+
+        assert_eq(game_outcome.goals_home, game_outcome.goals_away);
+
+        let challenger_sig: signature = challenger_claim_signature.sig;
+
+        // retrieve revealedanswer record
+        let (revealed_answer_record, audit_revealed_answer_record): (RevealAnswer, AuditRevealAnswer) = football_pvp_utils_v001.leo/reveal_answer(challenger_answer_record, challenger_sig);
+
+        let (joint_piece_challenger, audit_joint_piece_challenger, joint_piece_opponent, audit_joint_piece_opponent): (JointPieceWinner, AuditJointPieceWinner, JointPieceWinner, AuditJointPieceWinner) = football_coins_v001.leo/joint_stake_state_update_draw(joint_piece_state, challenger_claim_signature);
+
+        let game_finish_req_notification_record_opponent: GameFinishReqNotification = GameFinishReqNotification {
+            owner: challenger_answer_record.opponent_address,
+            game_multisig: challenger_answer_record.game_multisig,
+            game_state: 5field,
+            your_turn: true,
+            total_pot: joint_piece_state.amount,
+            challenger_address: challenger_answer_record.challenger_address,
+            opponent_address: challenger_answer_record.opponent_address,
+            challenger_answer: challenger_answer_record.answer,
+            opponent_answer: calculated_outcome_notification_record.opponent_answer,
+            winner: challenger_answer_record.game_multisig,
+            loser: challenger_answer_record.game_multisig,
+            ix: 11u32,
+        };
+
+        let game_finish_req_notification_record_challenger: GameFinishReqNotification = GameFinishReqNotification{
+            owner: challenger_answer_record.challenger_address,
+            game_multisig: challenger_answer_record.game_multisig,
+            game_state: 5field,
+            your_turn: true,
+            total_pot: joint_piece_state.amount,
+            challenger_address: challenger_answer_record.challenger_address,
+            opponent_address: challenger_answer_record.opponent_address,
+            challenger_answer: challenger_answer_record.answer,
+            opponent_answer: calculated_outcome_notification_record.opponent_answer,
+            winner: challenger_answer_record.game_multisig,
+            loser: challenger_answer_record.game_multisig,
+            ix: 11u32,
+        };
+    
+        return (revealed_answer_record, audit_revealed_answer_record, joint_piece_challenger, audit_joint_piece_challenger, joint_piece_opponent, audit_joint_piece_opponent, game_finish_req_notification_record_opponent, game_finish_req_notification_record_challenger)
+        then finalize (calculated_outcome_notification_record.game_multisig, game_outcome);
+    }
+
+    finalize reveal_answer_game_draw (game_multisig: address, input_outcome: GameOutcome) {
+        // Compare the input outcome to the stored outcome from mapping.
+        let stored_outcome: GameOutcome = Mapping::get(game_outcomes, game_multisig);
+        assert_eq(input_outcome.goals_home, stored_outcome.goals_home);
+        assert_eq(input_outcome.goals_away, stored_outcome.goals_away);
+    }
+
 
     // called by ms key to finish the game and get the total pot!
     transition finish_game
