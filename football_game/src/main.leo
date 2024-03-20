@@ -81,7 +81,7 @@ program football_game_v015.aleo {
         // false -> awaiting other party turn
 
     // sent to opponent on propose game for FE/client detection.
-    // consumed in match wager
+    // consumed in submit_wager
     // ix: 2
     record GameReqNotification {
         owner: address, //opponent
@@ -95,7 +95,7 @@ program football_game_v015.aleo {
     }
 
     // sent to challenger on propose game for FE/client detection.
-    // consumed in reveal answer
+    // consumed in reneg stake
     // ix: 3
     record WaitingAcceptanceNotification {
         owner: address, //opponent
@@ -108,6 +108,7 @@ program football_game_v015.aleo {
         ix: u32,
     }
 
+    // Never consumed
     // ix: 4
     record StakeRenegedNotification {
         owner: address, //opponent
@@ -122,7 +123,7 @@ program football_game_v015.aleo {
     }
 
     // sent to challenger on submit wager for FE/client detection.
-    // consumed in reveal answer
+    // Never consumed
     // ix: 5
     record ChallengerWagerNotification {
         owner: address, //opponent
@@ -135,6 +136,7 @@ program football_game_v015.aleo {
         ix: u32,
     }
 
+    // Never consumed
     // ix: 6
     record OpponentWagerNotification {
         owner: address, //opponent
@@ -148,7 +150,7 @@ program football_game_v015.aleo {
     }
 
     // sent to opponent on accept game for FE/client detection.
-    // consumed in finish_game/claim total pot
+    // Never consumed
     // ix: 7
     record WaitingRevealNotification {
         owner: address, //opponent
@@ -161,8 +163,9 @@ program football_game_v015.aleo {
         ix: u32,
     }
     
+    // TODO maybe rename?
     // sent to challenger on accept game for FE/client detection.
-    // consumed in reveal answer
+    // consumed in calculate_outcome
     // ix: 8
     record RevealAnswerNotification {
         owner: address, //challenger
@@ -177,6 +180,7 @@ program football_game_v015.aleo {
     }
 
     // sent to opponent on accept game for FE/client detection.
+    // Never consumed
     // ix: 9
     record WaitingCalculationNotification {
         owner: address, // opponent
@@ -190,7 +194,7 @@ program football_game_v015.aleo {
     }
 
     // sent to challenger on accept game for FE/client detection.
-    // consumed in finish_game/claim total pot
+    // consumed in reveal_answer
     // ix: 10
     record CalculatedOutcomeNotification {
         owner: address, //challenger
@@ -206,6 +210,7 @@ program football_game_v015.aleo {
 
 
     // sent to opponent on reveal answer for FE/client detection.
+    // Never consumed
     // ix: 11
     record GameFinishReqNotification {
         owner: address, //opponent
@@ -390,54 +395,53 @@ program football_game_v015.aleo {
         
     }
 
-    // challenger calls this function with Multisig key and signature as input
-    // that was submitted when proposing game and that exists on claim record
-    transition challenger_renege_stake
-    (
-        waiting_accept_game_notification: WaitingAcceptanceNotification,
-        piece_stake_challenger: football_coins_v001.leo/PieceStake.record,
-        piece_claim_challenger: football_coins_v001.leo/PieceClaim.record,
-        challenger_sig: signature,
-    ) -> (
-        football_coins_v001.leo/Piece.record,
-        football_coins_v001.leo/AuditStakeOut.record,
-        StakeRenegedNotification,
-        StakeRenegedNotification,
-        )
-    {
-        // assert contracts can't call this
-        assert_eq(self.caller, self.signer);
+    // // challenger calls this function with Multisig key and signature as input
+    // // that was submitted when proposing game and that exists on claim record
+    // transition challenger_renege_stake
+    // (
+    //     waiting_accept_game_notification: WaitingAcceptanceNotification,
+    //     piece_stake_challenger: football_coins_v001.leo/PieceStake.record,
+    //     piece_claim_challenger: football_coins_v001.leo/PieceClaim.record,
+    //     challenger_sig: signature,
+    // ) -> (
+    //     football_coins_v001.leo/Piece.record,
+    //     football_coins_v001.leo/AuditStakeOut.record,
+    //     StakeRenegedNotification,
+    //     StakeRenegedNotification,
+    //     )
+    // {
+    //     // assert contracts can't call this
+    //     assert_eq(self.caller, self.signer);
 
-        let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = football_coins_v001.leo/stake_transfer_out(piece_stake_challenger, piece_claim_challenger, challenger_sig);
+    //     let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = football_coins_v001.leo/stake_transfer_out(piece_stake_challenger, piece_claim_challenger, challenger_sig);
 
-        let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-            owner: waiting_accept_game_notification.challenger_address, //opponent
-            game_multisig: waiting_accept_game_notification.game_multisig,
-            game_state: 0field,
-            your_turn: false,
-            total_pot: waiting_accept_game_notification.total_pot,
-            challenger_address: waiting_accept_game_notification.challenger_address,
-            opponent_address: waiting_accept_game_notification.opponent_address,
-            renege_address: waiting_accept_game_notification.challenger_address,
-            ix: 4u32,
-        };
+    //     let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
+    //         owner: waiting_accept_game_notification.challenger_address, //opponent
+    //         game_multisig: waiting_accept_game_notification.game_multisig,
+    //         game_state: 0field,
+    //         your_turn: false,
+    //         total_pot: waiting_accept_game_notification.total_pot,
+    //         challenger_address: waiting_accept_game_notification.challenger_address,
+    //         opponent_address: waiting_accept_game_notification.opponent_address,
+    //         renege_address: waiting_accept_game_notification.challenger_address,
+    //         ix: 4u32,
+    //     };
 
 
-        let notify_opponent_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-            owner: waiting_accept_game_notification.opponent_address, //opponent
-            game_multisig: waiting_accept_game_notification.game_multisig,
-            game_state: 0field,
-            your_turn: false,
-            total_pot: waiting_accept_game_notification.total_pot,
-            challenger_address: waiting_accept_game_notification.challenger_address,
-            opponent_address: waiting_accept_game_notification.opponent_address,
-            renege_address: waiting_accept_game_notification.challenger_address,
-            ix: 4u32,
-        };
+    //     let notify_opponent_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
+    //         owner: waiting_accept_game_notification.opponent_address, //opponent
+    //         game_multisig: waiting_accept_game_notification.game_multisig,
+    //         game_state: 0field,
+    //         your_turn: false,
+    //         total_pot: waiting_accept_game_notification.total_pot,
+    //         challenger_address: waiting_accept_game_notification.challenger_address,
+    //         opponent_address: waiting_accept_game_notification.opponent_address,
+    //         renege_address: waiting_accept_game_notification.challenger_address,
+    //         ix: 4u32,
+    //     };
 
-        return (piece_record, audit_stake_out_record, notify_challenger_stake_reneged, notify_opponent_stake_reneged);
-
-    }
+    //     return (piece_record, audit_stake_out_record, notify_challenger_stake_reneged, notify_opponent_stake_reneged);
+    // }
 
     transition submit_wager (
         opponent_wager_record: football_coins_v001.leo/Piece.record,
@@ -530,54 +534,53 @@ program football_game_v015.aleo {
         );
     }
 
-    // opponent calls this function with Multisig key and signature as input
-    // that was submitted when submitting wager that exists on claim record
-    transition opponent_renege_stake
-    (
-        waiting_accept_game_notification: WaitingAcceptanceNotification,
-        piece_stake_opponent: football_coins_v001.leo/PieceStake.record,
-        piece_claim_opponent: football_coins_v001.leo/PieceClaim.record,
-        opponent_sig: signature,
-    ) -> (
-        football_coins_v001.leo/Piece.record,
-        football_coins_v001.leo/AuditStakeOut.record,
-        StakeRenegedNotification,
-        StakeRenegedNotification,
-        )
-    {
-        // assert contracts can't call this
-        assert_eq(self.caller, self.signer);
+    // // opponent calls this function with Multisig key and signature as input
+    // // that was submitted when submitting wager that exists on claim record
+    // transition opponent_renege_stake
+    // (
+    //     waiting_accept_game_notification: WaitingAcceptanceNotification, // BUG? This is owned by challenger
+    //     piece_stake_opponent: football_coins_v001.leo/PieceStake.record,
+    //     piece_claim_opponent: football_coins_v001.leo/PieceClaim.record,
+    //     opponent_sig: signature,
+    // ) -> (
+    //     football_coins_v001.leo/Piece.record,
+    //     football_coins_v001.leo/AuditStakeOut.record,
+    //     StakeRenegedNotification,
+    //     StakeRenegedNotification,
+    //     )
+    // {
+    //     // assert contracts can't call this
+    //     assert_eq(self.caller, self.signer);
 
-        let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = football_coins_v001.leo/stake_transfer_out(piece_stake_opponent, piece_claim_opponent, opponent_sig);
+    //     let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = football_coins_v001.leo/stake_transfer_out(piece_stake_opponent, piece_claim_opponent, opponent_sig);
 
-        let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-            owner: waiting_accept_game_notification.challenger_address, //opponent
-            game_multisig: waiting_accept_game_notification.game_multisig,
-            game_state: 0field,
-            your_turn: false,
-            total_pot: waiting_accept_game_notification.total_pot,
-            challenger_address: waiting_accept_game_notification.challenger_address,
-            opponent_address: waiting_accept_game_notification.opponent_address,
-            renege_address: waiting_accept_game_notification.opponent_address,
-            ix: 4u32,
-        };
+    //     let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
+    //         owner: waiting_accept_game_notification.challenger_address, //challenger
+    //         game_multisig: waiting_accept_game_notification.game_multisig,
+    //         game_state: 0field,
+    //         your_turn: false,
+    //         total_pot: waiting_accept_game_notification.total_pot,
+    //         challenger_address: waiting_accept_game_notification.challenger_address,
+    //         opponent_address: waiting_accept_game_notification.opponent_address,
+    //         renege_address: waiting_accept_game_notification.opponent_address,
+    //         ix: 4u32,
+    //     };
 
 
-        let notify_opponent_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-            owner: waiting_accept_game_notification.opponent_address, //opponent
-            game_multisig: waiting_accept_game_notification.game_multisig,
-            game_state: 0field,
-            your_turn: false,
-            total_pot: waiting_accept_game_notification.total_pot,
-            challenger_address: waiting_accept_game_notification.challenger_address,
-            opponent_address: waiting_accept_game_notification.opponent_address,
-            renege_address: waiting_accept_game_notification.opponent_address,
-            ix: 4u32,
-        };
+    //     let notify_opponent_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
+    //         owner: waiting_accept_game_notification.opponent_address, //opponent
+    //         game_multisig: waiting_accept_game_notification.game_multisig,
+    //         game_state: 0field,
+    //         your_turn: false,
+    //         total_pot: waiting_accept_game_notification.total_pot,
+    //         challenger_address: waiting_accept_game_notification.challenger_address,
+    //         opponent_address: waiting_accept_game_notification.opponent_address,
+    //         renege_address: waiting_accept_game_notification.opponent_address,
+    //         ix: 4u32,
+    //     };
 
-        return (piece_record, audit_stake_out_record, notify_challenger_stake_reneged, notify_opponent_stake_reneged);
-
-    }
+    //     return (piece_record, audit_stake_out_record, notify_challenger_stake_reneged, notify_opponent_stake_reneged);
+    // }
 
     // called by ms key after wager is confirmed on network
     transition accept_game
