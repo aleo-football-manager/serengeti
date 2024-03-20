@@ -321,39 +321,24 @@ function joint_stake_state_update:
     is.eq r2 r0.challenger into r8;
     or r7 r8 into r9;
     assert.eq r9 true;
-    not r6 into r10;
-    not r10 into r11;
-    is.eq r2 r0.opponent into r12;
-    or r11 r12 into r13;
-    assert.eq r13 true;
-    cast r0.game_multisig r0.amount r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r2 12u32 into r14 as JointPieceWinner.record;
-    cast r0.game_multisig r0.amount r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r2 13u32 into r15 as AuditJointPieceWinner.record;
-    output r14 as JointPieceWinner.record;
-    output r15 as AuditJointPieceWinner.record;
-
-
-function joint_stake_state_update_draw:
-    input r0 as JointPieceState.record;
-    input r1 as ClaimSignature.record;
-    assert.eq r0.owner r1.owner;
-    assert.eq r0.state_updater_address r1.owner;
-    assert.eq r0.state_updater_address r1.challenger;
-    add r1.amount r1.amount into r2;
-    assert.eq r0.amount r2;
-    assert.eq r0.opponent r1.opponent;
-    assert.eq r0.game_multisig r0.game_multisig;
-    cast r0.message_1 r0.message_2 r0.message_3 r0.message_4 r0.message_5 into r3 as Message;
-    sign.verify r1.sig r0.state_updater_address r3 into r4;
-    assert.eq true r4;
-    div r0.amount 2u64 into r5;
-    cast r0.game_multisig r5 r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.challenger 12u32 into r6 as JointPieceWinner.record;
-    cast r0.game_multisig r5 r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.challenger 13u32 into r7 as AuditJointPieceWinner.record;
-    cast r0.game_multisig r5 r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.challenger 12u32 into r8 as JointPieceWinner.record;
-    cast r0.game_multisig r5 r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r0.challenger 13u32 into r9 as AuditJointPieceWinner.record;
-    output r6 as JointPieceWinner.record;
-    output r7 as AuditJointPieceWinner.record;
-    output r8 as JointPieceWinner.record;
-    output r9 as AuditJointPieceWinner.record;
+    is.eq r2 r0.opponent into r10;
+    not r6 into r11;
+    and r11 r10 into r12;
+    not r12 into r13;
+    is.eq r2 r0.opponent into r14;
+    or r13 r14 into r15;
+    assert.eq r15 true;
+    not r6 into r16;
+    not r10 into r17;
+    and r16 r17 into r18;
+    not r18 into r19;
+    is.eq r2 r0.game_multisig into r20;
+    or r19 r20 into r21;
+    assert.eq r21 true;
+    cast r0.game_multisig r0.amount r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r2 12u32 into r22 as JointPieceWinner.record;
+    cast r0.game_multisig r0.amount r0.time_claimer_address r0.state_updater_address r0.challenger r0.opponent r0.game_multisig r2 13u32 into r23 as AuditJointPieceWinner.record;
+    output r22 as JointPieceWinner.record;
+    output r23 as AuditJointPieceWinner.record;
 
 
 function joint_stake_transfer_to_winner:
@@ -384,6 +369,34 @@ function joint_stake_transfer_to_winner:
     output r11 as Piece.record;
     output r12 as AuditTransferToWinner.record;
     output r13 as AuditPieceOwner.record;
+
+
+function joint_stake_transfer_draw:
+    input r0 as JointPieceWinner.record;
+    input r1 as PieceJointStake.record;
+    input r2 as JointPieceTimeClaim.record;
+    assert.eq r1.owner r0.owner;
+    assert.eq r2.owner r0.owner;
+    assert.eq r1.amount r0.amount;
+    assert.eq r2.amount r0.amount;
+    assert.eq r1.state_updater_address r0.challenger;
+    assert.eq r2.challenger r0.challenger;
+    assert.eq r1.time_claimer_address r0.opponent;
+    assert.eq r2.opponent r0.opponent;
+    assert.eq r0.winner r1.owner;
+    div r0.amount 2u64 into r3;
+    cast r0.challenger r3 0u32 into r4 as Piece.record;
+    cast r0.opponent r3 0u32 into r5 as Piece.record;
+    cast aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls r0.challenger r0.opponent r0.owner r0.challenger r3 14u32 into r6 as AuditTransferToWinner.record;
+    cast aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls r0.challenger r0.opponent r0.owner r0.opponent r3 14u32 into r7 as AuditTransferToWinner.record;
+    cast aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls r0.challenger r3 15u32 into r8 as AuditPieceOwner.record;
+    cast aleo16hf8hfpwasnn9cf7k2c0dllc56nn7qt547qxgvgwu6pznw4trvqsx68kls r0.challenger r3 15u32 into r9 as AuditPieceOwner.record;
+    output r4 as Piece.record;
+    output r6 as AuditTransferToWinner.record;
+    output r8 as AuditPieceOwner.record;
+    output r5 as Piece.record;
+    output r7 as AuditTransferToWinner.record;
+    output r9 as AuditPieceOwner.record;
 
 
 function joint_timeout_to_opponent:

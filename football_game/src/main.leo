@@ -960,6 +960,82 @@ program football_game_v015.aleo {
         return (piece_record, audit_transfer_to_winner_record, audit_piece_owner, updated_game_record, game_finished_notification_challenger_record, game_finished_notification_opponent_record);
     }
 
+        // called by ms key to finish the game and get the total pot!
+    transition finish_game_draw
+    (
+        game_record: Game,
+        joint_piece_winner: football_coins_v001.leo/JointPieceWinner.record,
+        piece_joint_stake: football_coins_v001.leo/PieceJointStake.record,
+        joint_piece_time_claim: football_coins_v001.leo/JointPieceTimeClaim.record,
+    ) -> (
+        football_coins_v001.leo/Piece.record,
+        football_coins_v001.leo/AuditTransferToWinner.record,
+        football_coins_v001.leo/AuditPieceOwner.record,
+        football_coins_v001.leo/Piece.record,
+        football_coins_v001.leo/AuditTransferToWinner.record,
+        football_coins_v001.leo/AuditPieceOwner.record,
+        Game,
+        GameFinishedNotification,
+        GameFinishedNotification)
+    {
+
+        // assert that the game address/multiisg is calling this
+        assert_eq(game_record.owner, self.signer);
+
+        // assert contracts can't call this
+        assert_eq(self.caller, self.signer);
+
+        let winner_address: address = joint_piece_winner.winner;
+        let loser_address: address = game_record.challenger_address == joint_piece_winner.winner ? game_record.opponent_address : game_record.challenger_address;
+
+        // let (piece_record, audit_transfer_to_winner_record, audit_piece_owner): (Piece, AuditTransferToWinner, AuditPieceOwner) = football_coins_v001.leo/joint_stake_transfer_to_winner(
+        let (piece_record_challenger, audit_transfer_to_challenger_record, audit_piece_challenger, piece_record_opponent, audit_transfer_to_opponent_record, audit_piece_opponent): (Piece, AuditTransferToWinner, AuditPieceOwner, Piece, AuditTransferToWinner, AuditPieceOwner) = football_coins_v001.leo/joint_stake_transfer_draw(
+            joint_piece_winner,
+            piece_joint_stake,
+            joint_piece_time_claim,
+        );
+
+        let updated_game_record: Game = Game {
+            owner: game_record.owner,
+            challenger_commit: game_record.challenger_commit,
+            opponent_answer: game_record.opponent_answer,
+            total_pot: game_record.total_pot,
+            challenger_address: game_record.challenger_address,
+            opponent_address: game_record.opponent_address,
+            game_multisig: game_record.game_multisig,
+            game_state: 6field,
+            ix: 0u32,
+        };
+
+        let game_finished_notification_challenger_record: GameFinishedNotification = GameFinishedNotification {
+            owner: game_record.challenger_address,
+            game_multisig: game_record.game_multisig,
+            game_state: 6field,
+            your_turn: false,
+            total_pot: game_record.total_pot,
+            challenger_address: game_record.challenger_address,
+            opponent_address: game_record.opponent_address,
+            winner: joint_piece_winner.winner,
+            loser: loser_address,
+            ix: 12u32,
+        };
+
+        let game_finished_notification_opponent_record: GameFinishedNotification = GameFinishedNotification {
+            owner: game_record.opponent_address,
+            game_multisig: game_record.game_multisig,
+            game_state: 6field,
+            your_turn: false,
+            total_pot: game_record.total_pot,
+            challenger_address: game_record.challenger_address,
+            opponent_address: game_record.opponent_address,
+            winner: joint_piece_winner.winner,
+            loser: loser_address,
+            ix: 12u32,
+        };
+
+        return (piece_record_challenger, audit_transfer_to_challenger_record, audit_piece_challenger, piece_record_opponent, audit_transfer_to_opponent_record, audit_piece_opponent, updated_game_record, game_finished_notification_challenger_record, game_finished_notification_opponent_record);
+    }
+
     // called by ms key via opponent to finish the game and get the total pot!
     transition finish_game_by_timeout(
         game_record: Game,
