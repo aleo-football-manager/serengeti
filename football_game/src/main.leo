@@ -243,10 +243,8 @@ program football_game_v015.aleo {
 
     // New propose game
     transition propose_game (
-        //puzzle_pieces.stake_transfer_in() data
         wager_record: football_coins_v001.leo/Piece.record,
         challenger_wager_amount: u64,
-        sender: address, // Challenger address proposing game
         challenger: address,
         opponent: address,
         game_multisig: address,
@@ -256,11 +254,9 @@ program football_game_v015.aleo {
         challenger_message_4: field,
         challenger_message_5: field,
         challenger_sig: signature, //from output of useSignature
-        //multiparty_pvp_utils data
-        challenger_nonce: field,
+        challenger_nonce: field, // TODO: check if this is necessary and what to put
         challenger_answer: [field; 11],
         game_multisig_seed: field, //game_multisig seed to send to user
-        //wheres_alex data
     ) -> (
         football_coins_v001.leo/PieceClaim.record,
         football_coins_v001.leo/PieceStake.record,
@@ -277,20 +273,15 @@ program football_game_v015.aleo {
     ) {
 
         // assert contracts can't call this
-        // assert_eq(self.caller, self.signer);
-
-        // random edge case, maybe unnecessary
-        // assert_neq(game_multisig, opponent);
-
-        // assert that user 1s answer is either "in weeds" or "behind building"
+        assert_eq(self.caller, self.signer);
         
         // hash the answer and nonce
         let challenger_commit: field = BHP256::commit_to_field(challenger_answer, challenger_nonce as scalar);
 
         // assert that the wager amount > 0 and wager inside credit == wager amt passed
-        // assert(challenger_wager_amount > 0u64);
+        assert(challenger_wager_amount > 0u64);
         // assert that the wager record has >= amount wagered
-        // assert(wager_record.amount >= challenger_wager_amount);
+        assert(wager_record.amount >= challenger_wager_amount);
 
         let (
             piece_claim_challenger,
@@ -306,7 +297,7 @@ program football_game_v015.aleo {
             AuditStakeIn
         ) = football_coins_v001.leo/stake_transfer_in(
             wager_record,
-            sender,
+            challenger,
             challenger,
             opponent,
             game_multisig,
@@ -350,7 +341,6 @@ program football_game_v015.aleo {
             ix: 3u32,
         };
 
-
         let game_record: Game = Game {
             owner: game_multisig,
             challenger_commit: challenger_commit,
@@ -378,6 +368,10 @@ program football_game_v015.aleo {
                 challenger_sig
         );
 
+        // TODO add check on mapping, multisig key does not already exist
+        // TODO validate formation
+
+
         return (
             piece_claim_challenger,
             piece_stake_challenger,
@@ -394,54 +388,6 @@ program football_game_v015.aleo {
         );
         
     }
-
-    // // challenger calls this function with Multisig key and signature as input
-    // // that was submitted when proposing game and that exists on claim record
-    // transition challenger_renege_stake
-    // (
-    //     waiting_accept_game_notification: WaitingAcceptanceNotification,
-    //     piece_stake_challenger: football_coins_v001.leo/PieceStake.record,
-    //     piece_claim_challenger: football_coins_v001.leo/PieceClaim.record,
-    //     challenger_sig: signature,
-    // ) -> (
-    //     football_coins_v001.leo/Piece.record,
-    //     football_coins_v001.leo/AuditStakeOut.record,
-    //     StakeRenegedNotification,
-    //     StakeRenegedNotification,
-    //     )
-    // {
-    //     // assert contracts can't call this
-    //     assert_eq(self.caller, self.signer);
-
-    //     let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = football_coins_v001.leo/stake_transfer_out(piece_stake_challenger, piece_claim_challenger, challenger_sig);
-
-    //     let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-    //         owner: waiting_accept_game_notification.challenger_address, //opponent
-    //         game_multisig: waiting_accept_game_notification.game_multisig,
-    //         game_state: 0field,
-    //         your_turn: false,
-    //         total_pot: waiting_accept_game_notification.total_pot,
-    //         challenger_address: waiting_accept_game_notification.challenger_address,
-    //         opponent_address: waiting_accept_game_notification.opponent_address,
-    //         renege_address: waiting_accept_game_notification.challenger_address,
-    //         ix: 4u32,
-    //     };
-
-
-    //     let notify_opponent_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-    //         owner: waiting_accept_game_notification.opponent_address, //opponent
-    //         game_multisig: waiting_accept_game_notification.game_multisig,
-    //         game_state: 0field,
-    //         your_turn: false,
-    //         total_pot: waiting_accept_game_notification.total_pot,
-    //         challenger_address: waiting_accept_game_notification.challenger_address,
-    //         opponent_address: waiting_accept_game_notification.opponent_address,
-    //         renege_address: waiting_accept_game_notification.challenger_address,
-    //         ix: 4u32,
-    //     };
-
-    //     return (piece_record, audit_stake_out_record, notify_challenger_stake_reneged, notify_opponent_stake_reneged);
-    // }
 
     transition submit_wager (
         opponent_wager_record: football_coins_v001.leo/Piece.record,
@@ -487,7 +433,7 @@ program football_game_v015.aleo {
             AuditStakeIn
         ) = football_coins_v001.leo/stake_transfer_in(
             opponent_wager_record,
-            game_req_notification.opponent_address, // sender
+            game_req_notification.opponent_address,
             game_req_notification.challenger_address, // challenger
             game_req_notification.opponent_address,
             game_req_notification.game_multisig,
@@ -534,54 +480,6 @@ program football_game_v015.aleo {
         );
     }
 
-    // // opponent calls this function with Multisig key and signature as input
-    // // that was submitted when submitting wager that exists on claim record
-    // transition opponent_renege_stake
-    // (
-    //     waiting_accept_game_notification: WaitingAcceptanceNotification, // BUG? This is owned by challenger
-    //     piece_stake_opponent: football_coins_v001.leo/PieceStake.record,
-    //     piece_claim_opponent: football_coins_v001.leo/PieceClaim.record,
-    //     opponent_sig: signature,
-    // ) -> (
-    //     football_coins_v001.leo/Piece.record,
-    //     football_coins_v001.leo/AuditStakeOut.record,
-    //     StakeRenegedNotification,
-    //     StakeRenegedNotification,
-    //     )
-    // {
-    //     // assert contracts can't call this
-    //     assert_eq(self.caller, self.signer);
-
-    //     let (piece_record, audit_stake_out_record): (Piece, AuditStakeOut) = football_coins_v001.leo/stake_transfer_out(piece_stake_opponent, piece_claim_opponent, opponent_sig);
-
-    //     let notify_challenger_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-    //         owner: waiting_accept_game_notification.challenger_address, //challenger
-    //         game_multisig: waiting_accept_game_notification.game_multisig,
-    //         game_state: 0field,
-    //         your_turn: false,
-    //         total_pot: waiting_accept_game_notification.total_pot,
-    //         challenger_address: waiting_accept_game_notification.challenger_address,
-    //         opponent_address: waiting_accept_game_notification.opponent_address,
-    //         renege_address: waiting_accept_game_notification.opponent_address,
-    //         ix: 4u32,
-    //     };
-
-
-    //     let notify_opponent_stake_reneged: StakeRenegedNotification = StakeRenegedNotification {
-    //         owner: waiting_accept_game_notification.opponent_address, //opponent
-    //         game_multisig: waiting_accept_game_notification.game_multisig,
-    //         game_state: 0field,
-    //         your_turn: false,
-    //         total_pot: waiting_accept_game_notification.total_pot,
-    //         challenger_address: waiting_accept_game_notification.challenger_address,
-    //         opponent_address: waiting_accept_game_notification.opponent_address,
-    //         renege_address: waiting_accept_game_notification.opponent_address,
-    //         ix: 4u32,
-    //     };
-
-    //     return (piece_record, audit_stake_out_record, notify_challenger_stake_reneged, notify_opponent_stake_reneged);
-    // }
-
     // called by ms key after wager is confirmed on network
     transition accept_game
     (
@@ -602,7 +500,6 @@ program football_game_v015.aleo {
         Game,
     )
     {
-
         // assert that the game address/multiisg is calling this
         assert_eq(game_record.owner, self.signer);
 
@@ -705,7 +602,6 @@ program football_game_v015.aleo {
         CalculatedOutcomeNotification,
         )
     {
-
         // assert that the correct state updater address is the challenger and the challenger
         // is invoking this
         assert_eq(reveal_answer_notification_record.challenger_address, self.signer);
@@ -1123,6 +1019,7 @@ program football_game_v015.aleo {
 
     finalize finish_game_by_timeout (joint_time_claim_block_ht: u32) {
         // assert that 10000 blocks have passed (~ 83 minutes)
+        // TODO change this to 3 days or something
         let current_block_ht: u32 = block.height;
         let threshold_block_ht: u32 = joint_time_claim_block_ht + 10000u32;
         assert(current_block_ht > threshold_block_ht);
